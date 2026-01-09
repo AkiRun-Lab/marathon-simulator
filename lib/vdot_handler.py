@@ -49,6 +49,47 @@ class VDOTHandler:
         idx = (seconds_series - target_seconds).abs().idxmin()
         return float(self.vdot_df.iloc[idx]['VDOT'])
 
+    def _parse_all_seconds(self):
+        """Helper to get all times in seconds as a numpy array sorted by VDOT"""
+        try:
+            # Assumes VDOT column is sorted actually
+             seconds = self.vdot_df[self.marathon_col].apply(self._time_str_to_seconds).values
+             vdots = self.vdot_df['VDOT'].astype(float).values
+             return vdots, seconds
+        except:
+            return np.array([]), np.array([])
+            
+    def get_time_for_exact_vdot(self, vdot_float):
+        """
+        Calculate exact time (in seconds) for a decimal VDOT using linear interpolation.
+        Range: 30 to 85 usually
+        """
+        vdots, seconds = self._parse_all_seconds()
+        
+        # Sort by VDOT ascending just in case (Time usually Descending as VDOT increases)
+        sort_idx = np.argsort(vdots)
+        vdots = vdots[sort_idx]
+        seconds = seconds[sort_idx]
+        
+        # Extrapolation or Interpolation
+        # numpy.interp works for interpolation
+        # Time is inverse to VDOT
+        return float(np.interp(vdot_float, vdots, seconds))
+
+    def get_exact_vdot_from_time(self, target_seconds):
+        """
+        Calculate exact decimal VDOT for a given time using linear interpolation.
+        """
+        vdots, seconds = self._parse_all_seconds()
+        
+        # Sort by Seconds Ascending (so interp works)
+        # Higher VDOT = Lower Seconds
+        sort_idx = np.argsort(seconds)
+        sorted_seconds = seconds[sort_idx]
+        sorted_vdots = vdots[sort_idx]
+        
+        return float(np.interp(target_seconds, sorted_seconds, sorted_vdots))
+
     @staticmethod
     def _time_str_to_seconds(t_str):
         try:

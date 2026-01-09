@@ -5,14 +5,14 @@
   xmlns="http://www.topografix.com/GPX/1/1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns2="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
   <metadata>
-    <name>Berlin Marathon 2025 - GPX by Organizer</name>
+    <name>BMW Berlin Marathon</name>
     <link href="connect.garmin.com">
       <text>Garmin Connect</text>
     </link>
-    <time>2025-12-08T03:08:04.000Z</time>
+    <time>2026-01-05T07:44:11.000Z</time>
   </metadata>
   <trk>
-    <name>Berlin Marathon 2025 - GPX by Organizer</name>
+    <name>BMW Berlin Marathon</name>
     <trkseg>
       <trkpt lat="52.515213964506984" lon="13.360199946910143">
         <ele>40.65</ele>

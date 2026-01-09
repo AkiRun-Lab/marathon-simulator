@@ -11,10 +11,17 @@ class CourseSegment:
     bearing_degrees: float # 0=North, 90=East
     is_exposed_to_wind: bool = False
     description: str = ""
+    start_lat: Optional[float] = None
+    start_lon: Optional[float] = None
 
     @property
     def distance(self):
         return self.end_km - self.start_km
+
+# ... (CourseData class def and get_ehime_marathon_default remain unchanged mostly, 
+# but new segments there will default lat/lon to None)
+
+
 
 class CourseData:
     def __init__(self):
@@ -120,12 +127,17 @@ class CourseData:
             # We MUST NOT skip this point, otherwise the runner teleports.
             # We assume flat terrain for gaps.
             if found_seg:
+                lat = found_seg.start_lat
+                lon = found_seg.start_lon
+                
                 points.append({
                     'km': current_km,
                     'gradient': found_seg.gradient,
                     'bearing': found_seg.bearing_degrees,
                     'wind_exposed': found_seg.is_exposed_to_wind,
-                    'segment_name': found_seg.description
+                    'segment_name': found_seg.description,
+                    'lat': lat,
+                    'lon': lon
                 })
             else:
                 # Fallback for gaps
@@ -134,9 +146,42 @@ class CourseData:
                     'gradient': 0.0,
                     'bearing': 0.0,
                     'wind_exposed': False,
-                    'segment_name': "Course Gap (Assumed Flat)"
+                    'segment_name': "Course Gap (Assumed Flat)",
+                    'lat': None,
+                    'lon': None
                 })
             
             current_km += (interval_m / 1000.0)
             
         return pd.DataFrame(points)
+
+    def calculate_elevation_gain(self) -> float:
+        """
+        Calculate total elevation gain (sum of positive vertical rise).
+        Using simple gradient * distance integration.
+        """
+        total_gain = 0.0
+        for seg in self.segments:
+             rise = seg.gradient * (seg.end_km - seg.start_km) * 1000.0 # m
+             if rise > 0:
+                 total_gain += rise
+        return total_gain
+
+    def calculate_difficulty_score(self) -> float:
+        """
+        Calculate a difficulty score.
+        Base Score = 100 (Flat 42km)
+        Strategy: Score = 100 + (Elevation Gain / 10)
+        Example: 
+        - Flat (Gain 0) -> 100
+        - Hill (Gain 300m) -> 130
+        """
+        gain = self.calculate_elevation_gain()
+        # Normalized for marathon distance? 
+        # Since this app is mostly for marathons, assuming ~42km distance is constant.
+        # But if user uploads shorter run, score might be low.
+        # Let's use Gain per Km density? No, total pain matters.
+        
+        base_score = 100
+        score = base_score + (gain / 10.0)
+        return round(score, 1)

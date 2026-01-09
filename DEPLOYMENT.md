@@ -6,9 +6,10 @@
 *   GitHubアカウントを持っていること
 *   Streamlit Community Cloudアカウントを持っていること（GitHub連携で作成可能）
 
-## 手順 1: GitHubへのアップロード
+## 手順 1: GitHubへのアップロード（初回のみ）
 
 まず、このプロジェクトをGitHubのリポジトリとして保存します。
+※ 2回目以降（更新時）は「運用: アプリの更新手順」を参照してください。
 
 1.  **TerminalでGitの初期設定**
     （まだしていなければ）プロジェクトフォルダで以下を実行します。
@@ -32,7 +33,7 @@
     git push -u origin main
     ```
 
-## 手順 2: Streamlit Community Cloud でのデプロイ
+## 手順 2: Streamlit Community Cloud でのデプロイ（初回のみ）
 
 1.  [Streamlit Community Cloud](https://streamlit.io/cloud) にログインします。
 2.  **「New app」** ボタンをクリックします。
@@ -49,11 +50,37 @@
 このURLをスマホに送れば、大会当日の朝やスタート前にいつでもプランを確認できます！
 
 ---
-### 注意点: データの追加
-新しいGPXファイルを追加したい場合は、PCのローカルフォルダに追加したあと、再度GitでCommit & Pushしてください。
+## 運用: アプリの更新手順（2回目以降）
+
+コードを修正したり、新しいGPXファイルを追加した場合は、ターミナルで以下の3行を実行するだけでWebアプリが自動更新されます。
+
 ```bash
-git add data/
-git commit -m "Add new marathon course"
+git add .
+git commit -m "アプリを更新"
 git push
 ```
-自動的にWebアプリ側も更新されます。
+数分後、Web上のアプリに反映されます。(`git init` や `remote add` は不要です)
+
+---
+
+## 手順 4: ブログへの埋め込み (akirun.netへの実装)
+
+WordPressなどのブログ記事内に、この計算機を埋め込んで表示させることができます。
+
+1.  上記の手順で発行された **アプリのURL** をコピーします（例: `https://your-app-name.streamlit.app`）。
+2.  ブログの編集画面（HTML編集 / カスタムHTMLブロック）で、以下のコードを貼り付けます。
+    
+    ```html
+    <iframe
+      src="https://your-app-name.streamlit.app/?embed=true"
+      height="800"
+      width="100%"
+      style="border:none;"
+      title="Marathon Pacer">
+    </iframe>
+    ```
+
+    *   `src`: コピーしたURLの末尾に `/?embed=true` をつけると、ヘッダー等の余計な装飾が消えて綺麗に埋め込めます。
+    *   `height`: 高さは必要に応じて調整してください（例: `1000` など）。
+
+これにより、ブログの読者は記事ページから移動することなく、そのままシミュレーションを実行できるようになります。

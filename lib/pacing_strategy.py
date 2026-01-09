@@ -10,20 +10,22 @@ class PacingStrategy:
         pacing_preference: String "even", "positive", "negative".
         """
         self.mass = mass_kg
+        self.mass = mass_kg
         self.vdot = vdot
-        self.wind_speed_ms = wind_speed_ms
+        # Apply Correction Factor for Ground Level Wind & Shielding
+        # Meteorological wind (10m height) vs Ground (1.5m) + Shielding by other runners
+        # Factor 0.5 is a common heuristic.
+        self.wind_speed_ms = wind_speed_ms * 0.5 
         self.wind_dir_degrees = wind_dir_degrees
         self.hill_preference = float(hill_preference) # 70.0 - 130.0
         self.pacing_preference = pacing_preference
         
         # Calculate Base Power (Watts)
         if target_time_sec:
-            # If target time is provided (from VDOT table), use it to set base speed
             self.base_speed_ms = 42195.0 / target_time_sec
         else:
-            # Fallback
-            raw_v_max = RunningPhysics.vdot_to_flat_velocity(self.vdot)
-            self.base_speed_ms = raw_v_max * 0.82 
+            # Default to 4 hours if not provided (Safety fallback)
+            self.base_speed_ms = 42195.0 / (4 * 3600)
             
         self.target_power = RunningPhysics.calculate_total_power(
             velocity=self.base_speed_ms,
@@ -49,13 +51,14 @@ class PacingStrategy:
         total_dist_km = 42.195
         
         # Split Strategy (Linear Ramp)
-        # Positive: 1.05 -> 0.95
-        # Negative: 0.95 -> 1.05
+        # Positive: 1.02 -> 0.98 (Start fast, fade slightly)
+        # Negative: 0.98 -> 1.02 (Start controlled, finish strong)
+        # 10% swing was too extreme. Adjusted to 4% total swing (+/- 2%) based on research.
         split_factors = np.ones(len(df))
         if self.pacing_preference == "positive":
-            split_factors = 1.05 - (0.10 * (km_array / total_dist_km))
+            split_factors = 1.02 - (0.04 * (km_array / total_dist_km))
         elif self.pacing_preference == "negative":
-            split_factors = 0.95 + (0.10 * (km_array / total_dist_km))
+            split_factors = 0.98 + (0.04 * (km_array / total_dist_km))
             
         # Hill Strategy (Gradient based)
         # hill_preference is Power % at 5% gradient. e.g. 120 means 1.2x power at 5% grade.
@@ -128,7 +131,9 @@ class PacingStrategy:
                 'speed_ms': optimal_speed,
                 'pace_min_km': pace_min_km,
                 'time_sec': time_sec,
-                'cumulative_time_sec': cumulative_time
+                'cumulative_time_sec': cumulative_time,
+                'lat': row.get('lat', None),
+                'lon': row.get('lon', None)
             })
             
         return pd.DataFrame(results)
