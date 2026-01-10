@@ -68,19 +68,20 @@ def main():
     weight = 60.0
     
     with st.expander("📝 設定パネル (タップして開閉)", expanded=True):
+        # Row 1: Target
+        st.markdown("##### 1. 基礎走力")
+        c1, c2 = st.columns(2)
+        
+        # Mode Selection (OUTSIDE FORM for Reactivity)
+        with c1:
+            target_mode = st.radio(
+                "設定モード", 
+                ["フルマラソンタイム", "VDOT"],
+                horizontal=True,
+                help="【VDOT】ダニエルズ式の走力指標を直接指定。\n【タイム】目標タイムから逆算してVDOTを決定します。"
+            )
+        
         with st.form(key='pacer_settings'):
-            
-            # Row 1: Target
-            st.markdown("##### 1. 基礎走力")
-            c1, c2 = st.columns(2)
-            with c1:
-                target_mode = st.radio(
-                    "設定モード", 
-                    ["フルマラソンタイム", "VDOT"],
-                    horizontal=True,
-                    help="【VDOT】ダニエルズ式の走力指標を直接指定。\n【タイム】目標タイムから逆算してVDOTを決定します。"
-                )
-            
             
             target_time_sec = None
             with c2:
