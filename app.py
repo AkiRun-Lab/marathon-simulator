@@ -25,7 +25,7 @@ def main():
     /* Hide Streamlit Branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* header {visibility: hidden;}  <- Sidebar toggle button lives here, so we must show it! */
     
     /* Red Submit Button */
     div[data-testid="stFormSubmitButton"] > button {
