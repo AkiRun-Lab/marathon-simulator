@@ -19,15 +19,9 @@ def main():
     st.title("🏃‍♂️ マラソン攻略シミュレーター (β0.1)")
     st.markdown("物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレートします")
 
-    # Custom CSS: Hide Style and Sidebar Hint
+    # Custom CSS for Red Button
     st.markdown("""
     <style>
-    /* Hide Streamlit Branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    /* header {visibility: hidden;}  <- Sidebar toggle button lives here, so we must show it! */
-    
-    /* Red Submit Button */
     div[data-testid="stFormSubmitButton"] > button {
         background: linear-gradient(45deg, #FF4B4B, #FF0000);
         color: white !important;
@@ -46,7 +40,6 @@ def main():
         background: linear-gradient(45deg, #FF0000, #FF4B4B);
         border: none !important;
         color: white !important;
-        cursor: pointer;
     }
     div[data-testid="stFormSubmitButton"] > button:active {
         transform: translateY(1px);
