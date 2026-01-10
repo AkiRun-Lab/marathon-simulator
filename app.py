@@ -90,7 +90,8 @@ def main():
                     if target_mode == "VDOT":
                         selected_vdot_float = st.number_input(
                             "VDOT (小数点入力可)", 
-                            min_value=30.0, max_value=85.0, value=45.0, step=0.1, format="%.2f"
+                            min_value=30.0, max_value=85.0, value=45.0, step=0.1, format="%.2f",
+                            help="ダニエルズ式の走力指標(30.0〜85.0)。数値が高いほど走力が高い判定になります。"
                         )
                         exact_sec = vdot_handler.get_time_for_exact_vdot(selected_vdot_float)
                         target_time_sec = exact_sec
@@ -99,7 +100,10 @@ def main():
                         s = int(exact_sec % 60)
                         st.caption(f"相当タイム: {h}:{m:02d}:{s:02d}")
                     else:
-                        target_time_str = st.text_input("目標タイム (h:mm:ss)", "3:30:00")
+                        target_time_str = st.text_input(
+                            "目標タイム (h:mm:ss)", "3:30:00",
+                            help="目標とする、または現在の実力のフルマラソンタイムを入力してください。"
+                        )
                         try:
                             parts = list(map(int, target_time_str.split(':')))
                             if len(parts) == 3: h, m, s = parts
@@ -128,15 +132,22 @@ def main():
             
             selected_gpx = st.selectbox(
                 "コースファイル", gpx_files,
-                format_func=lambda x: x.replace(".gpx", "")
+                format_func=lambda x: x.replace(".gpx", ""),
+                help="dataフォルダ内のGPXファイルを選択します。42.195km前後に自動補正されます。"
             )
 
             w1, w2 = st.columns(2)
             with w1:
-                wind_speed = st.slider("風速 (m/s)", 0.0, 10.0, 0.0)
+                wind_speed = st.slider(
+                    "風速 (m/s)", 0.0, 10.0, 0.0,
+                    help="当日の予報風速。内部計算で地表摩擦や遮蔽効果を考慮し、50%に減衰させて適用します。"
+                )
             with w2:
                 wind_options = {"北":0, "北東":45, "東":90, "南東":135, "南":180, "南西":225, "西":270, "北西":315}
-                wind_label = st.selectbox("風向き", list(wind_options.keys()))
+                wind_label = st.selectbox(
+                    "風向き", list(wind_options.keys()),
+                    help="風が吹いてくる方向を選択してください。"
+                )
                 wind_dir = wind_options[wind_label]
 
             # Advanced Smoothing (Hidden by default, enabled via ?dev=true)
@@ -163,7 +174,10 @@ def main():
                     "ポジティブ (前半貯金)": "positive",
                     "ネガティブ (後半追い上げ)": "negative"
                 }
-                split_label = st.selectbox("スプリット配分", list(split_map.keys()))
+                split_label = st.selectbox(
+                    "スプリット配分", list(split_map.keys()),
+                    help="ペース配分の傾向を選びます。\n【イーブン】一定ペース\n【ポジティブ】前半速く後半粘る\n【ネガティブ】後半にペースアップ"
+                )
             
             with s2:
                 hill_power_param = st.slider(
