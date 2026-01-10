@@ -118,7 +118,7 @@ def main():
                     st.error("VDOTデータなし")
                     selected_vdot_float = st.number_input("VDOT", value=45.0)
 
-            st.markdown("---")
+
             
             # Row 2: Course & Wind
             st.markdown("##### 2. コース・気象条件")
@@ -163,7 +163,7 @@ def main():
             else:
                 smoothing_m = 130 # Default value
             
-            st.markdown("---")
+
 
             # Row 3: Strategy
             st.markdown("##### 3. レース戦略")
