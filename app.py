@@ -55,132 +55,122 @@ def main():
     # --- Pre-load VDOT (Static) ---
     vdot_handler = load_vdot_data()
 
-    # --- Sidebar Inputs ---
+    # --- Initial Instruction (Visible until executed) ---
+    # Check if executed
+    if 'executed' not in st.session_state:
+        st.session_state['executed'] = False
+
+    if not st.session_state['executed']:
+        st.info("👇 下の設定パネルで条件を入力し、「シミュレーション実行」ボタンを押してください。")
+
+    # --- Main Area Inputs ---
     # Weight fixed to 60kg as per user request (simplification)
     weight = 60.0
     
-    st.sidebar.header("設定")
-    # Target Selection Mode
-    target_mode = st.sidebar.radio(
-        "基礎走力設定モード", 
-        ["フルマラソンタイム", "VDOT"],
-        help="【VDOT】ダニエルズ式の走力指標を直接指定。\n【タイム】目標タイムから逆算してVDOTを決定します。"
-    )
-
-    # Form Start
-    with st.sidebar.form(key='pacer_settings'):
-        st.subheader("基礎走力")
-        # Target Input
-        target_time_sec = None 
-        
-        if vdot_handler:
-            if target_mode == "VDOT":
-                selected_vdot_float = st.number_input(
-                    "VDOT (小数点入力可)", 
-                    min_value=30.0, max_value=85.0, value=45.0, step=0.1, format="%.2f",
-                    help="ジャック・ダニエルズ博士のランニングフォーミュラに基づく走力指数です。"
+    with st.expander("📝 設定パネル (タップして開閉)", expanded=True):
+        with st.form(key='pacer_settings'):
+            
+            # Row 1: Target
+            st.markdown("##### 1. 基礎走力")
+            c1, c2 = st.columns(2)
+            with c1:
+                target_mode = st.radio(
+                    "設定モード", 
+                    ["フルマラソンタイム", "VDOT"],
+                    horizontal=True,
+                    help="【VDOT】ダニエルズ式の走力指標を直接指定。\n【タイム】目標タイムから逆算してVDOTを決定します。"
                 )
-                
-                # Interpolate Time & Display immediately inside form
-                exact_sec = vdot_handler.get_time_for_exact_vdot(selected_vdot_float)
-                target_time_sec = exact_sec
-                
-                h = int(exact_sec // 3600)
-                m = int((exact_sec % 3600) // 60)
-                s = int(exact_sec % 60)
-                st.caption(f"入力VDOT相当タイム: {h}:{m:02d}:{s:02d}")
-                
-            else: # Time Target
-                target_time_str = st.text_input(
-                    "フルマラソンタイム (h:mm:ss)", "3:30:00",
-                    help="目標とする、または現在の実力のフルマラソンタイムを入力してください。"
-                )
-                
-                try:
-                    parts = list(map(int, target_time_str.split(':')))
-                    if len(parts) == 3: h, m, s = parts
-                    elif len(parts) == 2: h, m = parts; s = 0
-                    else: raise ValueError
-                    target_time_sec = h * 3600 + m * 60 + s
-                    
-                    # Display associated VDOT inside form
-                    s_vdot = vdot_handler.get_exact_vdot_from_time(target_time_sec)
-                    st.info(f"相当する VDOT: {s_vdot:.2f}")
-                    
-                except ValueError:
-                    target_time_sec = None
+            
+            
+            target_time_sec = None
+            with c2:
+                if vdot_handler:
+                    if target_mode == "VDOT":
+                        selected_vdot_float = st.number_input(
+                            "VDOT (小数点入力可)", 
+                            min_value=30.0, max_value=85.0, value=45.0, step=0.1, format="%.2f"
+                        )
+                        exact_sec = vdot_handler.get_time_for_exact_vdot(selected_vdot_float)
+                        target_time_sec = exact_sec
+                        h = int(exact_sec // 3600)
+                        m = int((exact_sec % 3600) // 60)
+                        s = int(exact_sec % 60)
+                        st.caption(f"相当タイム: {h}:{m:02d}:{s:02d}")
+                    else:
+                        target_time_str = st.text_input("目標タイム (h:mm:ss)", "3:30:00")
+                        try:
+                            parts = list(map(int, target_time_str.split(':')))
+                            if len(parts) == 3: h, m, s = parts
+                            elif len(parts) == 2: h, m = parts; s = 0
+                            else: raise ValueError
+                            target_time_sec = h * 3600 + m * 60 + s
+                            s_vdot = vdot_handler.get_exact_vdot_from_time(target_time_sec)
+                            st.caption(f"相当 VDOT: {s_vdot:.2f}")
+                        except ValueError:
+                            target_time_sec = None
+                else:
+                    st.error("VDOTデータなし")
+                    selected_vdot_float = st.number_input("VDOT", value=45.0)
 
-        else:
-            st.error("データフォルダに 'VDOT一覧表.csv' が見つかりません。")
-            selected_vdot_float = st.number_input("VDOT (手動入力)", value=45.0)
-
-        st.subheader("コース選択")
-        # Scan for GPX files
-        data_dir = "data"
-        gpx_files = [f for f in os.listdir(data_dir) if f.endswith(".gpx")]
-        if not gpx_files:
-            gpx_files = ["Ehime-marathon2025.gpx (Default)"]
-        gpx_files.sort()
-        
-        selected_gpx = st.selectbox(
-            "コースファイル", gpx_files,
-            format_func=lambda x: x.replace(".gpx", ""),
-            help="dataフォルダ内のGPXファイルを選択します。42.195km前後に自動補正されます。"
-        )
-
-        st.header("環境条件")
-        
-        # Elevation Smoothing Slider (Hidden in Expander)
-        with st.sidebar.expander("詳細設定 (開発者用)"):
-            smoothing_m = st.slider(
-                "標高データの平滑化範囲 (m)", 
-                min_value=100, max_value=200, value=130, step=5,
-                help="獲得標高の算出に使用する平滑化の強さ。値を大きくするとノイズが減り、獲得標高が小さくなります。"
+            st.markdown("---")
+            
+            # Row 2: Course & Wind
+            st.markdown("##### 2. コース・気象条件")
+            
+            # Scan for GPX files
+            data_dir = "data"
+            gpx_files = [f for f in os.listdir(data_dir) if f.endswith(".gpx")]
+            if not gpx_files:
+                gpx_files = ["Ehime-marathon2025.gpx (Default)"]
+            gpx_files.sort()
+            
+            selected_gpx = st.selectbox(
+                "コースファイル", gpx_files,
+                format_func=lambda x: x.replace(".gpx", "")
             )
 
-        wind_speed = st.slider(
-            "風速 (m/s)", 0.0, 10.0, 0.0,
-            help="当日の予報風速。内部計算で地表摩擦や遮蔽効果を考慮し、50%に減衰させて適用します。"
-        )
-        
-        wind_options = {
-            "北": 0,
-            "北東": 45,
-            "東": 90,
-            "南東": 135,
-            "南": 180,
-            "南西": 225,
-            "西": 270,
-            "北西": 315
-        }
-        wind_label = st.selectbox(
-            "風向き (風が吹いてくる方角)", list(wind_options.keys()),
-            help="風が吹いてくる方向を選択してください。"
-        )
-        wind_dir = wind_options[wind_label]
+            w1, w2 = st.columns(2)
+            with w1:
+                wind_speed = st.slider("風速 (m/s)", 0.0, 10.0, 0.0)
+            with w2:
+                wind_options = {"北":0, "北東":45, "東":90, "南東":135, "南":180, "南西":225, "西":270, "北西":315}
+                wind_label = st.selectbox("風向き", list(wind_options.keys()))
+                wind_dir = wind_options[wind_label]
 
-        # Strategy Settings
-        st.subheader("レース戦略の選択")
-        
-        # Split Strategy
-        split_map = {
-            "イーブン (一定)": "even",
-            "ポジティブ (前半貯金型)": "positive",
-            "ネガティブ (後半追い上げ型)": "negative"
-        }
-        split_label = st.selectbox(
-            "スプリット配分", list(split_map.keys()),
-            help="ペース配分の傾向を選びます。\n・イーブン: 終始一定\n・ポジティブ: 前半速く、後半粘る\n・ネガティブ: 前半抑えて、後半上げる"
-        )
-        
-        # Hill Strategy
-        hill_power_param = st.slider(
-            "上り坂のパワー設定 (平地比 %)", 
-            min_value=70, max_value=130, value=100, step=5,
-            help="坂道での頑張り度合い。\n・100%: 平地と同じ感覚（速度は落ちる）\n・>100%: 坂で頑張る（後半消耗リスクあり）\n・<100%: 坂は楽をする"
-        )
-        
-        submit_btn = st.form_submit_button("🚀 シミュレーション実行", type="primary")
+            # Advanced Smoothing (Hidden by default, enabled via ?dev=true)
+            # Check for query params (Streamlit 1.30+ uses st.query_params)
+            is_dev = "dev" in st.query_params
+            
+            if is_dev:
+                smoothing_m = st.slider(
+                    "詳細設定: 標高平滑化範囲 (m) [開発者用]", 
+                    min_value=100, max_value=200, value=130, step=5,
+                    help="値を大きくすると、細かい坂を無視して滑らかにします。"
+                )
+            else:
+                smoothing_m = 130 # Default value
+            
+            st.markdown("---")
+
+            # Row 3: Strategy
+            st.markdown("##### 3. レース戦略")
+            s1, s2 = st.columns(2)
+            with s1:
+                split_map = {
+                    "イーブン (一定)": "even",
+                    "ポジティブ (前半貯金)": "positive",
+                    "ネガティブ (後半追い上げ)": "negative"
+                }
+                split_label = st.selectbox("スプリット配分", list(split_map.keys()))
+            
+            with s2:
+                hill_power_param = st.slider(
+                    "坂道強度 (平地比 %)", 
+                    min_value=70, max_value=130, value=100, step=5,
+                    help="100%より高いと坂で頑張り、低いと休みます"
+                )
+            
+            submit_btn = st.form_submit_button("🚀 シミュレーション実行", type="primary")
     
     pacing_preference = split_map[split_label]
 
@@ -502,11 +492,9 @@ def main():
         else:
             st.caption("比較できる他のGPXファイルがありません。")
 
-    else:
-        st.info("👈 左側のサイドバーで設定を行い、「シミュレーション実行」ボタンを押してください。")
-
-    # --- Sidebar Info (Manual Summary) ---
-    with st.sidebar.expander("📘 アプリの使い方・仕様要約"):
+    # --- App Info (Manual Summary) ---
+    st.divider()
+    with st.expander("📘 アプリの使い方・仕様要約"):
         st.markdown("""
         **1. 基礎走力の設定**
         VDOTまたは目標タイムを入力し、あなたの走力基準を定めます。
@@ -514,7 +502,7 @@ def main():
         **2. コースと環境**
         GPXデータからコースの起伏を読み取ります。
         風速は予報値を入力してください（内部で地表補正されます）。
-        ※「詳細設定（開発者用）」で獲得標高の算出基準（平滑化）を調整できます。
+        ※「詳細設定」で獲得標高の算出基準（平滑化）を調整できます。
         
         **3. レース戦略**
         *   **スプリット**: 前半・後半のペース配分傾向。
