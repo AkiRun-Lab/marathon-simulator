@@ -50,6 +50,12 @@ def main():
         color: white !important;
         border-color: #FF4B4B !important;
     }
+    /* Hide Form Border */
+    [data-testid="stForm"] {
+        border: none;
+        padding-left: 0;
+        padding-right: 0;
+    }
     </style>
     """, unsafe_allow_html=True)
 
