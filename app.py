@@ -22,6 +22,18 @@ def main():
     # Custom CSS for Red Button
     st.markdown("""
     <style>
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: visible;} /* Keep menu accessible for settings */
+    footer {visibility: hidden;}     /* Hide footer to remove bottom whitespace */
+    header {visibility: visible;}    /* Keep header for menu access */
+
+    /* Optimize Spacing for Mobile */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0rem !important;
+    }
+
+    /* Red Submit Button Styling */
     div[data-testid="stFormSubmitButton"] > button {
         background: linear-gradient(45deg, #FF4B4B, #FF0000);
         color: white !important;
