@@ -66,14 +66,15 @@ def main():
     
     .sidebar-hint {
         position: fixed;
-        top: 60px;
-        left: 20px;
+        top: 100px;
+        left: 60px;
         z-index: 99999;
         font-size: 40px;
         color: #FF4B4B;
         animation: float 2s infinite ease-in-out;
         pointer-events: none;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        transform: rotate(180deg); /* Point left */
     }
     
     /* Show hint only on small screens */
