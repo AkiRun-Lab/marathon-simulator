@@ -21,14 +21,15 @@
 
 2.  **GitHubでリポジトリ作成**
     *   [GitHub](https://github.com) にアクセスし、右上の「+」→「New repository」をクリック。
-    *   **Repository name**: `ehime-marathon-pacer` など好きな名前を入力。
+    *   **Repository name**: `marathon-simulator`
+    *   **Description**: `A marathon pace simulator...` (Copied from chat history)
     *   **Public/Private**: どちらでもOKですが、無料版Streamlit CloudはPublicのみの場合があります（要確認）。Privateでもデプロイ可能ですが制限がある場合があります。
     *   「Create repository」をクリック。
 
 3.  **コードのプッシュ**
     *   作成後の画面に表示されるコマンド（`…or push an existing repository from the command line`）をコピーして、Terminalで実行します。例：
     ```bash
-    git remote add origin https://github.com/YOUR_USERNAME/ehime-marathon-pacer.git
+    git remote add origin https://github.com/AkiRun-Lab/marathon-simulator.git
     git branch -M main
     git push -u origin main
     ```
@@ -39,14 +40,14 @@
 2.  **「New app」** ボタンをクリックします。
 3.  **「Use existing repo」** を選択します。
 4.  以下の設定を入力します：
-    *   **Repository**: 手順1で作成した `YOUR_USERNAME/ehime-marathon-pacer` を選択。
+    *   **Repository**: 手順1で作成した `AkiRun-Lab/marathon-simulator` を選択。
     *   **Branch**: `main`
     *   **Main file path**: `app.py`
 5.  **「Deploy!」** をクリックします。
 
 ## 手順 3: 完了！
 
-1〜2分待つと、デプロイが完了し、アプリのURL（例: `https://ehime-marathon-pacer.streamlit.app`）が発行されます。
+1〜2分待つと、デプロイが完了し、アプリのURL（例: `https://akirun-marathon-simulator.streamlit.app`）が発行されます。
 このURLをスマホに送れば、大会当日の朝やスタート前にいつでもプランを確認できます！
 
 ---
@@ -61,18 +62,22 @@ git push
 ```
 数分後、Web上のアプリに反映されます。(`git init` や `remote add` は不要です)
 
+### 💡 ヒント: パスワードを聞かれたら？
+Googleログインを利用している場合、GitHubへのプッシュ時に入力するパスワードは、Googleのパスワードではなく **GitHub Personal Access Token (PAT)** です。
+キー入力（貼り付け）しても画面には何も表示されませんが、そのままEnterを押せば認証されます。
+
 ---
 
 ## 手順 4: ブログへの埋め込み (akirun.netへの実装)
 
 WordPressなどのブログ記事内に、この計算機を埋め込んで表示させることができます。
 
-1.  上記の手順で発行された **アプリのURL** をコピーします（例: `https://your-app-name.streamlit.app`）。
+1.  上記の手順で発行された **アプリのURL** をコピーします（例: `https://akirun-marathon-simulator.streamlit.app`）。
 2.  ブログの編集画面（HTML編集 / カスタムHTMLブロック）で、以下のコードを貼り付けます。
     
     ```html
     <iframe
-      src="https://your-app-name.streamlit.app/?embed=true"
+      src="https://akirun-marathon-simulator.streamlit.app/?embed=true"
       height="800"
       width="100%"
       style="border:none;"
