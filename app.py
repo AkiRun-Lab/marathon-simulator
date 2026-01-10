@@ -56,37 +56,7 @@ def main():
         color: white !important;
         border-color: #FF4B4B !important;
     }
-    
-    /* Floating Sidebar Hint (Mobile) */
-    @keyframes float {
-        0% { transform: translateX(0px); }
-        50% { transform: translateX(-10px); }
-        100% { transform: translateX(0px); }
-    }
-    
-    .sidebar-hint {
-        position: fixed;
-        top: 100px;
-        left: 60px;
-        z-index: 99999;
-        font-size: 40px;
-        color: #FF4B4B;
-        animation: float 2s infinite ease-in-out;
-        pointer-events: none;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        transform: rotate(180deg); /* Point left */
-    }
-    
-    /* Show hint only on small screens */
-    @media (min-width: 800px) {
-        .sidebar-hint {
-            display: none;
-        }
-    }
     </style>
-    
-    <!-- Visual Hint Element -->
-    <div class="sidebar-hint">👈</div>
     """, unsafe_allow_html=True)
 
     # --- Pre-load VDOT (Static) ---
