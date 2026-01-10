@@ -21,16 +21,15 @@ def main():
 
     # Custom CSS for Red Button
     st.markdown("""
-    <style>
     /* Hide Streamlit Branding */
     #MainMenu {visibility: visible;} /* Keep menu accessible for settings */
-    footer {visibility: hidden;}     /* Hide footer to remove bottom whitespace */
+    footer {display: none !important;} /* Use display:none to remove space */
     header {visibility: visible;}    /* Keep header for menu access */
 
     /* Optimize Spacing for Mobile */
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 0rem !important;
+        padding-top: 4.5rem !important; /* Increase padding to prevent header overlap */
+        padding-bottom: 3rem !important; /* Add slight bottom padding for safe area */
     }
 
     /* Red Submit Button Styling */
