@@ -21,6 +21,7 @@ def main():
 
     # Custom CSS for Red Button
     st.markdown("""
+    <style>
     /* Hide Streamlit Branding */
     #MainMenu {visibility: visible;} /* Keep menu accessible for settings */
     footer {display: none !important;} /* Use display:none to remove space */
