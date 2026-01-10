@@ -19,9 +19,15 @@ def main():
     st.title("🏃‍♂️ マラソン攻略シミュレーター (β0.1)")
     st.markdown("物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレートします")
 
-    # Custom CSS for Red Button
+    # Custom CSS: Hide Style and Sidebar Hint
     st.markdown("""
     <style>
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Red Submit Button */
     div[data-testid="stFormSubmitButton"] > button {
         background: linear-gradient(45deg, #FF4B4B, #FF0000);
         color: white !important;
@@ -40,6 +46,7 @@ def main():
         background: linear-gradient(45deg, #FF0000, #FF4B4B);
         border: none !important;
         color: white !important;
+        cursor: pointer;
     }
     div[data-testid="stFormSubmitButton"] > button:active {
         transform: translateY(1px);
@@ -49,7 +56,36 @@ def main():
         color: white !important;
         border-color: #FF4B4B !important;
     }
+    
+    /* Floating Sidebar Hint (Mobile) */
+    @keyframes float {
+        0% { transform: translateX(0px); }
+        50% { transform: translateX(-10px); }
+        100% { transform: translateX(0px); }
+    }
+    
+    .sidebar-hint {
+        position: fixed;
+        top: 60px;
+        left: 20px;
+        z-index: 99999;
+        font-size: 40px;
+        color: #FF4B4B;
+        animation: float 2s infinite ease-in-out;
+        pointer-events: none;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    /* Show hint only on small screens */
+    @media (min-width: 800px) {
+        .sidebar-hint {
+            display: none;
+        }
+    }
     </style>
+    
+    <!-- Visual Hint Element -->
+    <div class="sidebar-hint">👈</div>
     """, unsafe_allow_html=True)
 
     # --- Pre-load VDOT (Static) ---
