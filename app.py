@@ -76,7 +76,7 @@ def main():
     
     with st.expander("📝 設定パネル (タップして開閉)", expanded=True):
         # Row 1: Target
-        st.markdown("##### 1. 基礎走力")
+        st.markdown("##### <span style='color: #2196F3'>1. 基礎走力</span>", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         
         # Mode Selection (OUTSIDE FORM for Reactivity)
@@ -129,7 +129,7 @@ def main():
 
             
             # Row 2: Course & Wind
-            st.markdown("##### 2. コース・気象条件")
+            st.markdown("##### <span style='color: #2196F3'>2. コース・気象条件</span>", unsafe_allow_html=True)
             
             # Scan for GPX files
             data_dir = "data"
@@ -176,7 +176,7 @@ def main():
 
 
             # Row 3: Strategy
-            st.markdown("##### 3. レース戦略")
+            st.markdown("##### <span style='color: #2196F3'>3. レース戦略</span>", unsafe_allow_html=True)
             s1, s2 = st.columns(2)
             with s1:
                 split_map = {
