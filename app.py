@@ -22,20 +22,6 @@ def main():
     # Custom CSS for Red Button
     st.markdown("""
     <style>
-    /* Hide Streamlit Branding */
-    #MainMenu {visibility: visible;} /* Keep menu accessible for settings */
-    footer {display: none !important;} /* Use display:none to remove space */
-    header {visibility: visible;}    /* Keep header for menu access */
-    [data-testid="stDecoration"] {display: none;} /* Hide top decoration bar */
-    [data-testid="stStatusWidget"] {visibility: hidden;} /* Hide status widget */
-    .viewerBadge_container__1QSob {display: none;} /* Hide Streamlit Viewer Badge (Cloud) */
-
-    /* Optimize Spacing for Mobile */
-    .block-container {
-        padding-top: 4.5rem !important; /* Increase padding to prevent header overlap */
-        padding-bottom: 0rem !important; /* Remove bottom padding */
-    }
-
     /* Red Submit Button Styling */
     div[data-testid="stFormSubmitButton"] > button {
         background: linear-gradient(45deg, #FF4B4B, #FF0000);
