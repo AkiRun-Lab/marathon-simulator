@@ -130,7 +130,7 @@ def main():
                 gpx_files = ["Ehime-marathon2025.gpx (Default)"]
             gpx_files.sort()
             
-            selected_gpx = st.radio(
+            selected_gpx = st.selectbox(
                 "コースファイル", gpx_files,
                 format_func=lambda x: x.replace(".gpx", ""),
                 help="dataフォルダ内のGPXファイルを選択します。42.195km前後に自動補正されます。"
