@@ -286,10 +286,33 @@ def main():
         avg_sec = int(avg_pace_sec % 60)
         formatted_pace = f"{avg_min}:{avg_sec:02d}/km"
         
-        # Summary Metrics
+        # Summary Metrics - Featured Time Display
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        ">
+            <p style="margin: 0; color: #888; font-size: 0.9rem;">🏁 シミュレーション結果</p>
+            <p style="
+                margin: 0.5rem 0;
+                font-size: 3.5rem;
+                font-weight: bold;
+                color: #FF6B6B;
+                text-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
+                letter-spacing: 2px;
+            ">""" + formatted_time + """</p>
+            <p style="margin: 0; color: #aaa; font-size: 1rem;">""" + meta['course_name'].replace('.gpx', '') + """</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        
+        # Additional Metrics
         col1, col2, col3 = st.columns(3)
-        col1.metric("シミュレーション結果：予想タイム", formatted_time)
-        col1.caption(f"コース: {meta['course_name'].replace('.gpx', '')}")
+        col1.metric("予想タイム", formatted_time)
         
         col2.metric("シミュレーション結果：平均ペース", formatted_pace)
         
@@ -513,8 +536,23 @@ def main():
                 c2.metric("予想タイム", comp_time_fmt, delta=diff_str, delta_color="inverse")
                 c2.metric("獲得標高", f"{int(comp_gain)}m", delta=f"{int(comp_gain - curr_gain)}m", delta_color="off")
                 c2.metric("コース難易度 (Toughness)", f"{comp_score}", delta=f"{round(comp_score - curr_score, 1)}", delta_color="off")
-
                 
+                # Recommendation Comment based on time difference
+                st.divider()
+                compare_name = compare_gpx.replace('.gpx', '')
+                current_name = current_course.replace('.gpx', '')
+                
+                if diff_sec < 0:
+                    # Comparison course is faster
+                    faster_time = f"{diff_m}分{diff_s}秒" if diff_m > 0 else f"{diff_s}秒"
+                    st.success(f"🏆 **{compare_name}なら {faster_time} 速い！** PR狙いにおすすめです")
+                elif diff_sec > 0:
+                    # Current course is faster
+                    slower_time = f"{diff_m}分{diff_s}秒" if diff_m > 0 else f"{diff_s}秒"
+                    st.warning(f"⚠️ **{compare_name}は {slower_time} 遅い** 記録狙いなら {current_name} がおすすめ")
+                else:
+                    st.info(f"⏱️ **両コースのタイムは同等です**")
+
         else:
             st.caption("比較できる他のGPXファイルがありません。")
 
@@ -541,6 +579,24 @@ def main():
         
         ※ 詳細は同梱の USER_MANUAL.md を参照してください。
         """)
+    
+    # --- Footer with Developer Profile ---
+    st.divider()
+    st.markdown("""
+    <div style="text-align: center; padding: 1rem 0;">
+        <p style="margin: 0.3rem 0;">👤 <strong>開発者:</strong> あきら</p>
+        <p style="margin: 0.3rem 0;">🏃 フルマラソンPB 2:46:27（56歳）</p>
+        <p style="margin: 0.5rem 0;">
+            📱 <a href="https://akirun.net/" target="_blank">AkiRun｜走りを科学でアップデート</a>
+        </p>
+        <p style="margin: 0.3rem 0;">
+            📖 <a href="https://akirun.net/marathon-simulator-guide/" target="_blank">マラソン攻略シミュレーターの使い方</a>
+        </p>
+        <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: #888;">
+            マラソン攻略シミュレーター β0.1 | © 2025 AkiRun
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
