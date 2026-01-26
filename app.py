@@ -310,7 +310,7 @@ def main():
         """, unsafe_allow_html=True)
         
         
-        # Additional Metrics
+        # Additional Metrics - Row 1
         col1, col2, col3 = st.columns(3)
         col1.metric("予想タイム", formatted_time)
         
@@ -322,6 +322,12 @@ def main():
         flat_sec = int(base_flat_pace % 60)
         col3.metric("基礎走力（平地相当ペース）", f"{flat_min}:{flat_sec:02d}/km")
         col3.caption("このペース感覚を維持してください")
+        
+        # Additional Metrics - Row 2
+        col4, col5, col6 = st.columns(3)
+        col4.metric("獲得標高", f"{int(meta.get('elevation_gain', 0))}m")
+        col5.metric("コース難易度 (Toughness)", f"{meta.get('difficulty_score', 0)}")
+        # col6 is intentionally left empty for visual balance
 
         # --- Charts (Using High Res Data) ---
         st.subheader("ペース戦略チャート")
