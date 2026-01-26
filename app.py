@@ -16,7 +16,7 @@ def load_vdot_data():
     return None
 
 def main():
-    st.title("🏃‍♂️ マラソン攻略シミュレーター (β0.1)")
+    st.title("🏃‍♂️ マラソン攻略シミュレーター (v1.0)")
     st.markdown("物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレートします")
 
     # Custom CSS for Red Button
@@ -599,7 +599,7 @@ def main():
             📖 <a href="https://akirun.net/marathon-simulator-guide/" target="_blank">マラソン攻略シミュレーターの使い方</a>
         </p>
         <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: #888;">
-            マラソン攻略シミュレーター β0.1 | © 2025 AkiRun
+            マラソン攻略シミュレーター v1.0 | © 2025 AkiRun
         </p>
     </div>
     """, unsafe_allow_html=True)
