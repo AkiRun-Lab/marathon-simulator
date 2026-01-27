@@ -8,6 +8,9 @@ from lib.pacing_strategy import PacingStrategy
 from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
+# Version
+__version__ = "1.1.0"
+
 st.set_page_config(page_title="マラソン攻略シミュレーター", layout="wide")
 
 def load_vdot_data():
@@ -16,7 +19,7 @@ def load_vdot_data():
     return None
 
 def main():
-    st.title("🏃‍♂️ マラソン攻略シミュレーター (v1.0)")
+    st.title(f"🏃‍♂️ マラソン攻略シミュレーター (v{__version__})")
     st.markdown("物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレートします")
 
     # Custom CSS for Red Button
@@ -144,7 +147,7 @@ def main():
                 help="dataフォルダ内のGPXファイルを選択します。42.195km前後に自動補正されます。"
             )
 
-            w1, w2 = st.columns(2)
+            w1, w2, w3 = st.columns(3)
             with w1:
                 wind_speed = st.slider(
                     "風速 (m/s)", 0.0, 10.0, 0.0,
@@ -157,6 +160,14 @@ def main():
                     help="風が吹いてくる方向を選択してください。"
                 )
                 wind_dir = wind_options[wind_label]
+            with w3:
+                temperature = st.slider(
+                    "気温 (°C)", 
+                    min_value=0, 
+                    max_value=35, 
+                    value=10,
+                    help="レース当日の予報気温。10°C未満では調整なし。10°C以上では気温に応じてタイムが調整されます。"
+                )
 
             # Advanced Smoothing (Hidden by default, enabled via ?dev=true)
             # Check for query params (Streamlit 1.30+ uses st.query_params)
@@ -236,13 +247,24 @@ def main():
         if target_time_sec is None:
             st.error("目標タイムまたはVDOTの設定を確認してください。")
             st.stop()
+        
+        # Temperature Adjustment
+        from lib.temperature_adjustment import adjust_marathon_time, get_delay_minutes
+        
+        base_time_sec = target_time_sec  # 補正前のタイムを保存
+        base_time_min = target_time_sec / 60
+        
+        # 気温補正を適用
+        adjusted_time_min = adjust_marathon_time(base_time_min, temperature)
+        adjusted_time_sec = adjusted_time_min * 60
+        temp_delay_min = get_delay_minutes(base_time_min, temperature)
             
-        # Strategy Calculation
+        # Strategy Calculation (補正後のタイムを使用)
         strategy = PacingStrategy(
             mass_kg=weight, 
             wind_speed_ms=wind_speed, 
             wind_dir_degrees=wind_dir,
-            target_time_sec=target_time_sec,
+            target_time_sec=adjusted_time_sec,  # 気温補正後のタイム
             hill_preference=hill_power_param, 
             pacing_preference=pacing_preference
         )
@@ -255,7 +277,10 @@ def main():
         st.session_state['result_meta'] = {
             'course_name': selected_gpx,
             'base_speed_ms': strategy.base_speed_ms,
-            'target_time_sec': target_time_sec, 
+            'target_time_sec': adjusted_time_sec,  # 補正後のタイム
+            'base_time_sec': base_time_sec,  # 補正前のタイム（表示用）
+            'temperature': temperature,  # 気温
+            'temp_delay_min': temp_delay_min,  # 気温による遅延 
             'weight': weight,
             'wind_speed': wind_speed,
             'wind_dir': wind_dir,
@@ -308,6 +333,32 @@ def main():
             <p style="margin: 0; color: #aaa; font-size: 1rem;">""" + meta['course_name'].replace('.gpx', '') + """</p>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Temperature Adjustment Info
+        if meta['temperature'] > 10:
+            from lib.temperature_adjustment import get_temperature_warning, format_time
+            
+            delay_min = meta['temp_delay_min']
+            temp = meta['temperature']
+            base_time_sec = meta['base_time_sec']
+            
+            # 補正情報の表示
+            st.info(f"""
+🌡️ **気温補正適用済み**: {temp}°C の条件で、約 **{delay_min:.1f}分** の遅延を考慮した予想タイムです。
+
+※ 10°C（最適気温）の場合、約 **{delay_min:.1f}分** 短縮される見込みです。
+            """)
+            
+            # 警告メッセージ
+            warning = get_temperature_warning(temp)
+            if warning:
+                if temp >= 30:
+                    st.error(warning)
+                elif temp >= 25:
+                    st.warning(warning)
+            
+            # 免責文言
+            st.caption("⚠️ この調整値は学術研究に基づく統計的推定です。個人差や当日のコンディションにより実際のタイムは異なる場合があります。")
         
         
         # Additional Metrics - Row 1
@@ -588,7 +639,7 @@ def main():
     
     # --- Footer with Developer Profile ---
     st.divider()
-    st.markdown("""
+    st.markdown(f"""
     <div style="text-align: center; padding: 1rem 0;">
         <p style="margin: 0.3rem 0;">👤 <strong>開発者:</strong> あきら</p>
         <p style="margin: 0.3rem 0;">🏃 フルマラソンPB 2:46:27（56歳）</p>
@@ -599,7 +650,7 @@ def main():
             📖 <a href="https://akirun.net/marathon-simulator-guide/" target="_blank">マラソン攻略シミュレーターの使い方</a>
         </p>
         <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: #888;">
-            マラソン攻略シミュレーター v1.0 | © 2025 AkiRun
+            マラソン攻略シミュレーター v{__version__} | © 2025 AkiRun
         </p>
     </div>
     """, unsafe_allow_html=True)
