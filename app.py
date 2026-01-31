@@ -19,8 +19,44 @@ def load_vdot_data():
     return None
 
 def main():
-    st.title(f"🏃‍♂️ マラソン攻略シミュレーター (v{__version__})")
-    st.markdown("物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレートします")
+    # Responsive Title - PC: 1 line, Mobile: 2 lines with clean design
+    st.markdown(f"""
+    <style>
+    .app-title {{
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.3rem;
+        line-height: 1.2;
+    }}
+    .app-version {{
+        font-size: 0.9rem;
+        color: #888;
+        display: inline;
+    }}
+    .app-subtitle {{
+        font-size: 1rem;
+        color: #aaa;
+        margin-bottom: 1rem;
+    }}
+    /* Mobile styles */
+    @media (max-width: 768px) {{
+        .app-title {{
+            font-size: 1.4rem;
+        }}
+        .app-version {{
+            display: block;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }}
+        .app-subtitle {{
+            font-size: 0.75rem;
+        }}
+    }}
+    </style>
+    <div class="app-title">🏃‍♂️ マラソン攻略シミュレーター</div>
+    <div class="app-version">v{__version__}</div>
+    <div class="app-subtitle">物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレート</div>
+    """, unsafe_allow_html=True)
 
     # Custom CSS for Red Button
     st.markdown("""
