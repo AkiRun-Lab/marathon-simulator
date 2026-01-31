@@ -41,7 +41,7 @@ def main():
     /* Mobile styles */
     @media (max-width: 768px) {{
         .app-title {{
-            font-size: 1.1rem;
+            font-size: 5.5vw;  /* 画面幅に応じて自動調整 */
         }}
         .app-version {{
             display: block;
