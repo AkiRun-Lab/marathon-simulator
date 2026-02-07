@@ -9,7 +9,7 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 st.set_page_config(page_title="マラソン攻略シミュレーター", layout="wide")
 
@@ -113,8 +113,7 @@ def main():
     # Weight fixed to 60kg as per user request (simplification)
     weight = 60.0
     
-    with st.expander("📝 設定パネル (タップして開閉)", expanded=True):
-        # Row 1: Target
+    with st.expander("📝 設定パネル", expanded=True):
         st.markdown("##### <span style='color: #2196F3'>1. 基礎走力</span>", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         
@@ -244,6 +243,8 @@ def main():
                 )
             
             submit_btn = st.form_submit_button("🚀 シミュレーション実行", type="primary")
+    
+
     
     pacing_preference = split_map[split_label]
 
@@ -419,7 +420,11 @@ def main():
         # Additional Metrics - Row 2
         col4, col5, col6 = st.columns(3)
         col4.metric("獲得標高", f"{int(meta.get('elevation_gain', 0))}m")
-        col5.metric("コース難易度 (Toughness)", f"{meta.get('difficulty_score', 0)}")
+        
+        # コース難易度 = シミュレーション結果 / 目標タイム
+        difficulty = total_seconds / meta['base_time_sec']
+        col5.metric("コース難易度", f"{difficulty:.4g}")
+        col5.caption("シミュレーション結果 / 目標タイム")
         # col6 is intentionally left empty for visual balance
 
         # --- Charts (Using High Res Data) ---
@@ -616,10 +621,12 @@ def main():
                 
                 # Calculate Metrics for Comparison
                 comp_gain = comp_data.calculate_elevation_gain()
-                comp_score = comp_data.calculate_difficulty_score()
+                
+                # コース難易度 = シミュレーション結果 / 目標タイム
+                curr_difficulty = total_seconds / meta['base_time_sec']
+                comp_difficulty = comp_total / meta['base_time_sec']
                 
                 curr_gain = meta.get('elevation_gain', 0)
-                curr_score = meta.get('difficulty_score', 0)
                 
                 # Display Results with Metrics
                 c1, c2 = st.columns(2)
@@ -628,13 +635,14 @@ def main():
                 c1.markdown(f"### {current_course.replace('.gpx', '')}")
                 c1.metric("予想タイム", formatted_time)
                 c1.metric("獲得標高", f"{int(curr_gain)}m")
-                c1.metric("コース難易度 (Toughness)", f"{curr_score}")
+                c1.metric("コース難易度", f"{curr_difficulty:.4g}")
                 
                 # Comparison
                 c2.markdown(f"### {compare_gpx.replace('.gpx', '')}")
                 c2.metric("予想タイム", comp_time_fmt, delta=diff_str, delta_color="inverse")
                 c2.metric("獲得標高", f"{int(comp_gain)}m", delta=f"{int(comp_gain - curr_gain)}m", delta_color="off")
-                c2.metric("コース難易度 (Toughness)", f"{comp_score}", delta=f"{round(comp_score - curr_score, 1)}", delta_color="off")
+                diff_difficulty = comp_difficulty - curr_difficulty
+                c2.metric("コース難易度", f"{comp_difficulty:.4g}", delta=f"{diff_difficulty:+.4g}", delta_color="off")
                 
                 # Recommendation Comment based on time difference
                 st.divider()
@@ -703,7 +711,7 @@ def main():
         **4. 結果の見方**
         *   **平均ペース**: 赤い線に従って走ると、設定した戦略通りにレースを展開できます。
         *   **平滑化**: チャートのチェックボックスで、細かい変動をならしてトレンドを確認できます。
-        *   **コース比較**: 別のコースと難易度（Toughness）やタイム差を比較できます。
+        *   **コース比較**: 別のコースとコース難易度やタイム差を比較できます。
         
         ※ 詳細は同梱の USER_MANUAL.md を参照してください。
         """)
