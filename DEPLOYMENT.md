@@ -16,13 +16,13 @@
     ```bash
     git init
     git add .
-    git commit -m "Initial commit for Ehime Marathon Pacer"
+    git commit -m "Initial commit: マラソン攻略シミュレーター"
     ```
 
 2.  **GitHubでリポジトリ作成**
     *   [GitHub](https://github.com) にアクセスし、右上の「+」→「New repository」をクリック。
     *   **Repository name**: `marathon-simulator`
-    *   **Description**: `A marathon pace simulator...` (Copied from chat history)
+    *   **Description**: `物理モデルに基づくマラソンペースシミュレーター`
     *   **Public/Private**: どちらでもOKですが、無料版Streamlit CloudはPublicのみの場合があります（要確認）。Privateでもデプロイ可能ですが制限がある場合があります。
     *   「Create repository」をクリック。
 
