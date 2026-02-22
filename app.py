@@ -9,7 +9,7 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 st.set_page_config(page_title="マラソン攻略シミュレーター", layout="wide")
 
@@ -105,6 +105,10 @@ def main():
     # Check if executed
     if 'executed' not in st.session_state:
         st.session_state['executed'] = False
+    if 'result_df' not in st.session_state:
+        st.session_state['result_df'] = None
+    if 'result_meta' not in st.session_state:
+        st.session_state['result_meta'] = None
 
     if not st.session_state['executed']:
         st.info("👇 下の設定パネルで条件を入力し、「シミュレーション実行」ボタンを押してください。")
