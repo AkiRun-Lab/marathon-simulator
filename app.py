@@ -816,7 +816,7 @@ def main():
     st.markdown(f"""
     <div style="text-align: center; padding: 1rem 0;">
         <p style="margin: 0.3rem 0;">👤 <strong>開発者:</strong> あきら</p>
-        <p style="margin: 0.3rem 0;">🏃 フルマラソンPB 2:46:27（56歳）</p>
+        <p style="margin: 0.3rem 0;">🏃 フルマラソンPB 2:46:27</p>
         <div style="
             display: flex;
             justify-content: center;
