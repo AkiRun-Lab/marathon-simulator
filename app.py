@@ -352,8 +352,22 @@ def main():
         avg_sec = int(avg_pace_sec % 60)
         formatted_pace = f"{avg_min}:{avg_sec:02d}/km"
         
-        # Summary Metrics - Featured Time Display
-        st.markdown("""
+        # Summary Metrics - Featured Time Display + CTA①（カード一体型）
+        # 目標タイムに応じたCTAメッセージ
+        target_h = int(meta['base_time_sec'] // 3600)
+        target_m = int((meta['base_time_sec'] % 3600) // 60)
+        if target_h >= 4:
+            cta_label = "完走を確実にするギア選び →"
+        elif target_h >= 3 and target_m >= 30:
+            cta_label = "サブ3.5を狙うシューズ＆ギア →"
+        elif target_h >= 3:
+            cta_label = "サブ3の壁を越えるギア選び →"
+        else:
+            cta_label = "2時間台ランナーの装備を見る →"
+        
+        course_name = meta['course_name'].replace('.gpx', '')
+        
+        st.markdown(f"""
         <div style="
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border-radius: 16px;
@@ -370,8 +384,19 @@ def main():
                 color: #FF6B6B;
                 text-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
                 letter-spacing: 2px;
-            ">""" + formatted_time + """</p>
-            <p style="margin: 0; color: #aaa; font-size: 1rem;">""" + meta['course_name'].replace('.gpx', '') + """</p>
+            ">{formatted_time}</p>
+            <p style="margin: 0 0 1rem 0; color: #aaa; font-size: 1rem;">{course_name}</p>
+            <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
+                display: inline-block;
+                background: rgba(255, 107, 107, 0.15);
+                color: #FF6B6B;
+                padding: 0.4rem 1.2rem;
+                border-radius: 20px;
+                border: 1px solid rgba(255, 107, 107, 0.4);
+                font-size: 0.85rem;
+                font-weight: bold;
+                text-decoration: none;
+            ">👟 {cta_label}</a>
         </div>
         """, unsafe_allow_html=True)
         
@@ -400,13 +425,6 @@ def main():
             
             # 免責文言
             st.caption("⚠️ この調整値は学術研究に基づく統計的推定です。個人差や当日のコンディションにより実際のタイムは異なる場合があります。")
-        
-        # ヒントテキスト (CTA)
-        st.markdown("""
-<p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 1rem;">
-    💡 ヒント: このシミュレーションを活かすための<a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="color: #00E5FF;">おすすめギアはこちら</a>
-</p>
-""", unsafe_allow_html=True)
         
         # Additional Metrics - Row 1
         col1, col2, col3 = st.columns(3)
@@ -570,6 +588,37 @@ def main():
         final_table = df_1km[['区間', '平均ペース', 'ラップ', '通過タイム']]
         st.dataframe(final_table, use_container_width=True)
 
+        # CTA② ラップ表の下 - レース準備CTA
+        st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1rem 0 1.5rem 0;
+    text-align: center;
+">
+    <p style="color: #E2E8F0; font-size: 0.95rem; margin: 0 0 0.3rem 0;">
+        📋 ラップ表をメモしたら、次は<span style="color: #FF6B6B; font-weight: bold;">ギアの最終チェック</span>
+    </p>
+    <p style="color: #94A3B8; font-size: 0.8rem; margin: 0 0 0.8rem 0;">
+        レース当日のパフォーマンスはシューズで変わる ── サブエガランナーの装備を公開中
+    </p>
+    <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
+        display: inline-block;
+        background: transparent;
+        color: #FF6B6B;
+        padding: 0.4rem 1.5rem;
+        border-radius: 6px;
+        border: 1px solid #FF6B6B;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    ">👟 PB更新ギアガイドを見る</a>
+</div>
+""", unsafe_allow_html=True)
+
         # --- Course Comparison Section ---
         st.divider()
         st.subheader("📊 コース比較")
@@ -667,7 +716,7 @@ def main():
         else:
             st.caption("比較できる他のGPXファイルがありません。")
 
-        # CTAボックス
+        # CTA③ コース比較後 - メインCTAボックス
         st.markdown("""
 <div style="
     background: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
@@ -676,23 +725,41 @@ def main():
     padding: 1.5rem;
     margin: 1.5rem 0;
     text-align: center;
+    position: relative;
+    overflow: hidden;
 ">
-    <p style="color: #00E5FF; font-size: 1.1rem; margin-bottom: 0.5rem;">
-        📚 トレーニング効率を最大化するギア
+    <div style="
+        position: absolute;
+        top: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #FF6B6B, #FF4757);
+        color: white;
+        padding: 0.2rem 1rem;
+        border-radius: 0 0 6px 6px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    ">🔥 ランナーに人気</div>
+    <p style="color: #00E5FF; font-size: 1.15rem; margin: 1rem 0 0.3rem 0; font-weight: bold;">
+        👟 PB更新に本当に効いたシューズ＆ギア
     </p>
-    <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 1rem;">
-        科学的根拠に基づいて厳選したランニングギアを紹介しています
+    <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 1rem;">
+        サブエガ（2:50切り）ランナーが実走検証して厳選した装備ガイド
     </p>
     <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
         display: inline-block;
-        background: linear-gradient(135deg, #00E5FF 0%, #0EA5E9 100%);
-        color: #0F172A;
+        background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+        color: white;
         padding: 0.75rem 2rem;
         border-radius: 8px;
         text-decoration: none;
         font-weight: bold;
         font-size: 1rem;
-    ">🛒 厳選ギアを見る →</a>
+        box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
+    ">ギアガイドを読む →</a>
+    <p style="color: #64748B; font-size: 0.7rem; margin: 0.8rem 0 0 0;">
+        ※ 記事内にAmazon・楽天のリンクを含みます
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
