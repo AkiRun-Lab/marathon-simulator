@@ -783,9 +783,33 @@ def main():
         *   **平均ペース**: 赤い線に従って走ると、設定した戦略通りにレースを展開できます。
         *   **平滑化**: チャートのチェックボックスで、細かい変動をならしてトレンドを確認できます。
         *   **コース比較**: 別のコースとコース難易度やタイム差を比較できます。
-        
-        ※ 詳細は同梱の USER_MANUAL.md を参照してください。
         """)
+        
+        # ブログ記事への誘導
+        st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    text-align: center;
+">
+    <p style="color: #E2E8F0; font-size: 0.9rem; margin: 0 0 0.5rem 0;">
+        📖 もっと詳しい使い方をブログで解説しています
+    </p>
+    <a href="https://akirun.net/marathon-simulator-guide/" target="_blank" style="
+        display: inline-block;
+        background: rgba(0, 229, 255, 0.1);
+        color: #00E5FF;
+        padding: 0.4rem 1.2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        font-size: 0.85rem;
+        font-weight: bold;
+        text-decoration: none;
+    ">使い方ガイドを読む →</a>
+</div>
+""", unsafe_allow_html=True)
     
     # --- Footer with Developer Profile ---
     st.divider()
@@ -793,12 +817,47 @@ def main():
     <div style="text-align: center; padding: 1rem 0;">
         <p style="margin: 0.3rem 0;">👤 <strong>開発者:</strong> あきら</p>
         <p style="margin: 0.3rem 0;">🏃 フルマラソンPB 2:46:27（56歳）</p>
-        <p style="margin: 0.5rem 0;">
-            📱 <a href="https://akirun.net/" target="_blank">AkiRun｜走りを科学でアップデート</a>
-        </p>
-        <p style="margin: 0.3rem 0;">
-            📖 <a href="https://akirun.net/marathon-simulator-guide/" target="_blank">マラソン攻略シミュレーターの使い方</a>
-        </p>
+        <div style="
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        ">
+            <a href="https://akirun.net/" target="_blank" style="
+                display: inline-block;
+                background: rgba(0, 229, 255, 0.1);
+                color: #00E5FF;
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                border: 1px solid rgba(0, 229, 255, 0.3);
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: bold;
+            ">📱 AkiRun ブログ</a>
+            <a href="https://akirun.net/marathon-simulator-guide/" target="_blank" style="
+                display: inline-block;
+                background: rgba(255, 107, 107, 0.1);
+                color: #FF6B6B;
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 107, 107, 0.3);
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: bold;
+            ">📖 使い方ガイド</a>
+            <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
+                display: inline-block;
+                background: rgba(255, 107, 107, 0.1);
+                color: #FF6B6B;
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 107, 107, 0.3);
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: bold;
+            ">👟 ギアガイド</a>
+        </div>
         <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: #888;">
             マラソン攻略シミュレーター v{__version__} | © 2025 AkiRun
         </p>
