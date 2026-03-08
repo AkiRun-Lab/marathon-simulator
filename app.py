@@ -9,7 +9,7 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 
 st.set_page_config(page_title="マラソン攻略シミュレーター", layout="wide")
 
@@ -193,7 +193,12 @@ def main():
                     help="当日の予報風速。内部計算で地表摩擦や遮蔽効果を考慮し、50%に減衰させて適用します。"
                 )
             with w2:
-                wind_options = {"北":0, "北東":45, "東":90, "南東":135, "南":180, "南西":225, "西":270, "北西":315}
+                wind_options = {
+                    "北":0, "北北東":22.5, "北東":45, "東北東":67.5,
+                    "東":90, "東南東":112.5, "南東":135, "南南東":157.5,
+                    "南":180, "南南西":202.5, "南西":225, "西南西":247.5,
+                    "西":270, "西北西":292.5, "北西":315, "北北西":337.5
+                }
                 wind_label = st.selectbox(
                     "風向き", list(wind_options.keys()),
                     help="風が吹いてくる方向を選択してください。"
