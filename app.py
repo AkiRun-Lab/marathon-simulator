@@ -9,9 +9,9 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
-st.set_page_config(page_title="マラソン攻略シミュレーター", layout="wide")
+st.set_page_config(page_title="マラソンペース計算ツール（MPC）", layout="wide")
 
 def load_vdot_data():
     if os.path.exists("data/VDOT一覧表.csv"):
@@ -53,7 +53,7 @@ def main():
         }}
     }}
     </style>
-    <div class="app-title">🏃‍♂️ マラソン攻略シミュレーター</div>
+    <div class="app-title">🏃‍♂️ マラソンペース計算ツール（MPC）</div>
     <div class="app-version">v{__version__}</div>
     <div class="app-subtitle">物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレート</div>
     """, unsafe_allow_html=True)
@@ -864,7 +864,7 @@ def main():
             ">👟 ギアガイド</a>
         </div>
         <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: #888;">
-            マラソン攻略シミュレーター v{__version__} | © 2025 AkiRun
+            マラソンペース計算ツール（MPC） v{__version__} | © 2025 AkiRun
         </p>
     </div>
     """, unsafe_allow_html=True)
