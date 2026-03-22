@@ -1,0 +1,56 @@
+name: Keep Alive - MPC (Marathon Pace Calculator)
+
+on:
+  schedule:
+    # 6時間ごと (UTC 0:00, 6:00, 12:00, 18:00 = JST 9:00, 15:00, 21:00, 3:00)
+    - cron: '0 */6 * * *'
+  # 手動実行（動作確認・緊急起動用）
+  workflow_dispatch:
+
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Wake up MPC App
+        run: |
+          cat > wake.js << 'EOF'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
+            const url = 'https://akirun-marathon-simulator.streamlit.app/';
+            console.log(`[${new Date().toISOString()}] Accessing ${url} ...`);
+            try {
+              await page.goto(url, { timeout: 60000, waitUntil: 'domcontentloaded' });
+              // Streamlit のスリープページには "get this app back up" ボタンがある
+              const wakeBtn = page.getByRole('button', { name: /get this app back up/i });
+              const isSleeping = await wakeBtn.isVisible({ timeout: 5000 }).catch(() => false);
+              if (isSleeping) {
+                console.log('STATUS: SLEEPING - Clicking wake-up button...');
+                await wakeBtn.click();
+                await page.waitForTimeout(90000);
+                console.log('Wake-up request sent. App should be starting.');
+              } else {
+                console.log('STATUS: RUNNING - No action needed.');
+              }
+            } catch (e) {
+              console.log('ERROR:', e.message);
+            } finally {
+              await browser.close();
+            }
+          })();
+          EOF
+          node wake.js
