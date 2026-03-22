@@ -43,6 +43,7 @@ jobs:
                 await wakeBtn.click();
                 await page.waitForTimeout(90000);
                 console.log('Wake-up request sent. App should be starting.');
+                process.exitCode = 1; // GitHub にメール通知させる
               } else {
                 console.log('STATUS: RUNNING - No action needed.');
               }
