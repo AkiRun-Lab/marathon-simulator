@@ -9,7 +9,7 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 
 st.set_page_config(page_title="マラソンペース計算ツール（MPC）", layout="wide")
 
@@ -173,16 +173,18 @@ def main():
             # Row 2: Course & Wind
             st.markdown("##### <span style='color: #2196F3'>2. コース・気象条件</span>", unsafe_allow_html=True)
             
-            # Scan for GPX files
-            data_dir = "data"
-            gpx_files = [f for f in os.listdir(data_dir) if f.endswith(".gpx")]
+            # Scan for GPX files (domestic first, then international)
+            domestic_dir = os.path.join("data", "domestic")
+            intl_dir = os.path.join("data", "international")
+            domestic_files = sorted([os.path.join("domestic", f) for f in os.listdir(domestic_dir) if f.endswith(".gpx")]) if os.path.exists(domestic_dir) else []
+            intl_files = sorted([os.path.join("international", f) for f in os.listdir(intl_dir) if f.endswith(".gpx")]) if os.path.exists(intl_dir) else []
+            gpx_files = domestic_files + intl_files
             if not gpx_files:
                 gpx_files = ["Ehime-marathon2025.gpx (Default)"]
-            gpx_files.sort()
-            
+
             selected_gpx = st.selectbox(
                 "コースファイル", gpx_files,
-                format_func=lambda x: x.replace(".gpx", ""),
+                format_func=lambda x: os.path.basename(x).replace(".gpx", ""),
                 help="dataフォルダ内のGPXファイルを選択します。42.195km前後に自動補正されます。"
             )
 
@@ -370,7 +372,7 @@ def main():
         else:
             cta_label = "2時間台ランナーの装備を見る →"
         
-        course_name = meta['course_name'].replace('.gpx', '')
+        course_name = os.path.basename(meta['course_name']).replace('.gpx', '')
         
         st.markdown(f"""
         <div style="
@@ -635,7 +637,7 @@ def main():
         if compare_files:
             compare_gpx = st.selectbox(
                 "比較対象のコース", compare_files,
-                format_func=lambda x: x.replace(".gpx", "")
+                format_func=lambda x: os.path.basename(x).replace(".gpx", "")
             )
             
             if st.button("コース比較を実行", key="compare_btn"):
@@ -690,13 +692,13 @@ def main():
                 c1, c2 = st.columns(2)
                 
                 # Current
-                c1.markdown(f"### {current_course.replace('.gpx', '')}")
+                c1.markdown(f"### {os.path.basename(current_course).replace('.gpx', '')}")
                 c1.metric("予想タイム", formatted_time)
                 c1.metric("獲得標高", f"{int(curr_gain)}m")
                 c1.metric("コース難易度", f"{curr_difficulty:.4g}")
                 
                 # Comparison
-                c2.markdown(f"### {compare_gpx.replace('.gpx', '')}")
+                c2.markdown(f"### {os.path.basename(compare_gpx).replace('.gpx', '')}")
                 c2.metric("予想タイム", comp_time_fmt, delta=diff_str, delta_color="inverse")
                 c2.metric("獲得標高", f"{int(comp_gain)}m", delta=f"{int(comp_gain - curr_gain)}m", delta_color="off")
                 diff_difficulty = comp_difficulty - curr_difficulty
@@ -704,8 +706,8 @@ def main():
                 
                 # Recommendation Comment based on time difference
                 st.divider()
-                compare_name = compare_gpx.replace('.gpx', '')
-                current_name = current_course.replace('.gpx', '')
+                compare_name = os.path.basename(compare_gpx).replace('.gpx', '')
+                current_name = os.path.basename(current_course).replace('.gpx', '')
                 
                 if diff_sec < 0:
                     # Comparison course is faster
