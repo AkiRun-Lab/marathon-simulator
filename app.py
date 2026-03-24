@@ -27,15 +27,19 @@ def main():
         font-weight: bold;
         margin-bottom: 0.3rem;
         line-height: 1.2;
+        color: #2196F3;
+        text-align: center;
     }}
     .app-version {{
         font-size: 0.9rem;
         color: #888;
-        display: inline;
+        display: block;
+        text-align: center;
     }}
     .app-subtitle {{
         font-size: 1rem;
         color: #aaa;
+        text-align: center;
         margin-bottom: 1rem;
     }}
     /* Mobile styles */
@@ -53,7 +57,7 @@ def main():
         }}
     }}
     </style>
-    <div class="app-title">🏃‍♂️ マラソンペース計算ツール（MPC）</div>
+    <div class="app-title">🏃‍♂️ マラソンペース計算ツール</div>
     <div class="app-version">v{__version__}</div>
     <div class="app-subtitle">物理モデルに基づき、世界中のマラソンコースの予想タイムをシミュレート</div>
     """, unsafe_allow_html=True)
@@ -866,7 +870,7 @@ def main():
             ">👟 ギアガイド</a>
         </div>
         <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: #888;">
-            マラソンペース計算ツール（MPC） v{__version__} | © 2025 AkiRun
+            マラソンペース計算ツール v{__version__} | © 2025 AkiRun
         </p>
     </div>
     """, unsafe_allow_html=True)
