@@ -68,6 +68,25 @@ Googleログインを利用している場合、GitHubへのプッシュ時に�
 
 ---
 
+## VDOTデータの編集ルール
+
+VDOTデータは `data/vdot/` が正規ソースです。`apps/mss/data/` 内のファイル（`VDOT一覧表.csv`, `VDOT練習ペース.csv`）を直接編集しないでください。
+
+```bash
+# 1. 正規データを編集
+#    data/vdot/vdot_list.csv または data/vdot/vdot_pace.csv
+
+# 2. 各アプリに同期（MSSへは日本語ファイル名にリネームしてコピーされる）
+./scripts/sync-vdot-data.sh
+
+# 3. 差分チェックのみ（変更なし）
+./scripts/sync-vdot-data.sh --check
+```
+
+同期先: AMC（`apps/amc/data/`）、MSS（`apps/mss/data/`）、VDOT計算機（ビルド時に参照）
+
+---
+
 ## 手順 4: ブログへの埋め込み (akirun.netへの実装)
 
 WordPressなどのブログ記事内に、この計算機を埋め込んで表示させることができます。
