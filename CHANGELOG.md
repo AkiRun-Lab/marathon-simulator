@@ -4,6 +4,40 @@
 
 ---
 
+## [1.4.1] - 2026-04-19
+
+### 追加
+- **標高補正閾値を開発者用 UI で変更可能に**: `?dev=true` でアクセスした際のフォームに「詳細設定: 標高補正の閾値 (m)」スライダー（0〜1500m、50m刻み、デフォルト 500m）を追加
+  - コード変更・再デプロイなしに閾値を試行錯誤できる
+  - 通常ユーザーへの表示・挙動は変化なし
+
+### 変更
+- `altitude_adjustment.adjust_marathon_time()` / `get_delay_minutes()` に省略可能な `threshold_m` 引数を追加（省略時はモジュール定数 `ALTITUDE_THRESHOLD_M` を使用）
+- 結果エリアの「影響なし」info メッセージの閾値表示を固定値 500 から実際の適用値（`result_meta['altitude_threshold_m']`）に動的化
+
+---
+
+## [1.4.0] - 2026-04-20
+
+### 追加
+- **標高補正機能**: GPX の絶対標高（海抜 m）からコースの平均標高を算出し、Péronnet et al. (1991) モデルに基づくタイム補正を実装
+  - サイドバーに「🏔️ 標高補正を適用」チェックボックスを追加（デフォルト ON）
+  - 気温補正と同様の乗算補正式。500m 以下の低地コースは補正ゼロ
+  - 結果エリアに「平均標高 Xm → +Y.Y分」の info メッセージと「平均標高」metric を追加
+  - 1500m 超・2500m 超で段階的な注意メッセージを表示
+  - 開発者キルスイッチ `ALTITUDE_CORRECTION_ENABLED` と閾値 `ALTITUDE_THRESHOLD_M` を `altitude_adjustment.py` 冒頭に配置
+
+### 変更
+- `CourseSegment` dataclass に `start_elevation: Optional[float]` フィールドを追加（非破壊）
+- `CourseData` クラスに `calculate_mean_elevation()` メソッドを追加
+- `GPXHandler.to_course_data()` で GPX の `ele_smooth` を各セグメントの `start_elevation` に伝搬
+
+### 新規ファイル
+- `lib/altitude_adjustment.py`: Péronnet (1991) 補正ロジック
+- `tests/test_altitude_adjustment.py`: 16 ケースのユニットテスト
+
+---
+
 ## [1.3.2] - 2026-03-24
 
 ### 変更

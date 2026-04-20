@@ -9,7 +9,7 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.3.2"
+__version__ = "1.4.0"
 
 st.set_page_config(page_title="マラソンペース計算ツール（MPC）", layout="wide")
 
@@ -219,18 +219,31 @@ def main():
                     help="レース当日の予報気温。10°C未満では調整なし。10°C以上では気温に応じてタイムが調整されます。"
                 )
 
+            # 標高補正トグル
+            apply_altitude_correction = st.checkbox(
+                "🏔️ 標高補正を適用（Péronnet 1991）",
+                value=True,
+                help="GPX の平均標高（海抜 m）に基づき、有酸素パワーの低下分をタイムに反映します。閾値 500m 未満は影響ゼロ。"
+            )
+
             # Advanced Smoothing (Hidden by default, enabled via ?dev=true)
             # Check for query params (Streamlit 1.30+ uses st.query_params)
             is_dev = "dev" in st.query_params
             
             if is_dev:
                 smoothing_m = st.slider(
-                    "詳細設定: 標高平滑化範囲 (m) [開発者用]", 
+                    "詳細設定: 標高平滑化範囲 (m) [開発者用]",
                     min_value=100, max_value=200, value=130, step=5,
                     help="値を大きくすると、細かい坂を無視して滑らかにします。"
                 )
+                altitude_threshold_m = st.slider(
+                    "詳細設定: 標高補正の閾値 (m) [開発者用]",
+                    min_value=0, max_value=1500, value=500, step=50,
+                    help="この値以下の平均標高は補正係数 1.0（補正ゼロ）。デフォルト 500m。"
+                )
             else:
-                smoothing_m = 130 # Default value
+                smoothing_m = 130  # Default value
+                altitude_threshold_m = 500  # Default value
             
             st.markdown("---")
             
@@ -308,9 +321,21 @@ def main():
         
         # 気温補正を適用
         adjusted_time_min = adjust_marathon_time(base_time_min, temperature)
-        adjusted_time_sec = adjusted_time_min * 60
         temp_delay_min = get_delay_minutes(base_time_min, temperature)
-            
+
+        # 標高補正を適用
+        from lib.altitude_adjustment import (
+            adjust_marathon_time as altitude_adjust_time,
+            get_delay_minutes as altitude_get_delay,
+            get_altitude_warning,
+        )
+        mean_elevation = course_data.calculate_mean_elevation()
+        altitude_delay_min = altitude_get_delay(base_time_min, mean_elevation, threshold_m=altitude_threshold_m) if apply_altitude_correction else 0.0
+        if apply_altitude_correction:
+            adjusted_time_min = altitude_adjust_time(adjusted_time_min, mean_elevation, threshold_m=altitude_threshold_m)
+
+        adjusted_time_sec = adjusted_time_min * 60
+
         # Strategy Calculation (補正後のタイムを使用)
         strategy = PacingStrategy(
             mass_kg=weight, 
@@ -341,7 +366,11 @@ def main():
             'smoothing_m': smoothing_m,
             # Pre-calculate metrics for current course
             'elevation_gain': course_data.calculate_elevation_gain(),
-            'difficulty_score': course_data.calculate_difficulty_score()
+            'difficulty_score': course_data.calculate_difficulty_score(),
+            'mean_elevation': mean_elevation,
+            'altitude_delay_min': altitude_delay_min,
+            'altitude_correction_applied': apply_altitude_correction,
+            'altitude_threshold_m': altitude_threshold_m,
         }
 
     # --- Rendering Engine (Uses Cached Data) ---
@@ -436,7 +465,22 @@ def main():
             
             # 免責文言
             st.caption("⚠️ この調整値は学術研究に基づく統計的推定です。個人差や当日のコンディションにより実際のタイムは異なる場合があります。")
-        
+
+        # Altitude Adjustment Info
+        if meta.get('altitude_correction_applied'):
+            from lib.altitude_adjustment import get_altitude_warning
+            mean_elev = meta.get('mean_elevation', 0.0)
+            alt_delay = meta.get('altitude_delay_min', 0.0)
+            if alt_delay > 0.0:
+                st.info(f"🏔️ **標高補正適用済み**：平均標高 {int(mean_elev)}m → 約 **{alt_delay:.1f}分** の遅延を考慮した予想タイムです。")
+            else:
+                applied_threshold = int(meta.get('altitude_threshold_m', 500))
+                st.info(f"🏔️ **標高補正適用済み**：平均標高 {int(mean_elev)}m（{applied_threshold}m 以下のため影響なし）")
+            warning = get_altitude_warning(mean_elev)
+            if warning:
+                st.warning(warning)
+            st.caption("⚠️ 標高補正は非高地順化ランナーを想定した理論値です（Péronnet et al. 1991）。高地に慣れたランナーへの影響は小さくなります。")
+
         # Additional Metrics - Row 1
         col1, col2, col3 = st.columns(3)
         col1.metric("予想タイム", formatted_time)
@@ -458,7 +502,9 @@ def main():
         difficulty = total_seconds / meta['base_time_sec']
         col5.metric("コース難易度", f"{difficulty:.4g}")
         col5.caption("シミュレーション結果 / 目標タイム")
-        # col6 is intentionally left empty for visual balance
+        mean_elev = meta.get('mean_elevation', 0.0)
+        col6.metric("平均標高", f"{int(mean_elev)}m")
+        col6.caption("コース平均海抜")
 
         # --- Charts (Using High Res Data) ---
         st.subheader("ペース戦略チャート")
