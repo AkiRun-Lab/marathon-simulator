@@ -13,6 +13,7 @@ class CourseSegment:
     description: str = ""
     start_lat: Optional[float] = None
     start_lon: Optional[float] = None
+    start_elevation: Optional[float] = None  # 絶対標高（海抜 m）、GPX の ele_smooth から取得
 
     @property
     def distance(self):
@@ -154,6 +155,21 @@ class CourseData:
             current_km += (interval_m / 1000.0)
             
         return pd.DataFrame(points)
+
+    def calculate_mean_elevation(self) -> float:
+        """コース全体の距離加重平均標高（海抜 m）を返す
+
+        CourseSegment.start_elevation が None のセグメントは除外する。
+        全セグメントが None の場合（海抜データなし）は 0.0 を返す。
+        """
+        total_dist = 0.0
+        weighted_sum = 0.0
+        for seg in self.segments:
+            if seg.start_elevation is not None:
+                dist = seg.end_km - seg.start_km
+                weighted_sum += seg.start_elevation * dist
+                total_dist += dist
+        return weighted_sum / total_dist if total_dist > 0 else 0.0
 
     def calculate_elevation_gain(self) -> float:
         """

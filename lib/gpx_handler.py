@@ -163,7 +163,8 @@ class GPXHandler:
                 is_exposed_to_wind=True,
                 description=desc,
                 start_lat=row.lat,
-                start_lon=row.lon
+                start_lon=row.lon,
+                start_elevation=row.ele_smooth
             )
             course.segments.append(segment)
             
