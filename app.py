@@ -9,7 +9,7 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.4.0"
+__version__ = "1.4.2"
 
 st.set_page_config(page_title="マラソンペース計算ツール（MPC）", layout="wide")
 
