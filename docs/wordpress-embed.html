@@ -1,0 +1,114 @@
+<style>
+  .ms-wrapper {
+    width: 100%;
+    overflow: hidden;
+    background-color: #0E1117;
+    margin: 0;
+    padding: 0;
+  }
+  .ms-iframe {
+    width: calc(100% + 10px);
+    border: none !important;
+    display: block;
+    margin-left: -5px;
+    margin-top: -5px;
+    margin-bottom: 0;
+    clip-path: inset(5px 5px 0 5px);
+  }
+  @media (min-width: 768px) { .ms-iframe { height: 1500px; } }
+  @media (max-width: 767px) { .ms-iframe { height: 2500px; } }
+
+  /* iframeの下に表示するコンテンツ（ダークモード） */
+  .ms-content {
+    background: #0E1117;
+    color: #FAFAFA;
+    padding: 40px 30px;
+    line-height: 1.8;
+    font-size: 16px;
+  }
+  .ms-content h2 {
+    color: #FF4B4B;
+    font-size: 1.4em;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #333;
+  }
+  .ms-content h2:first-child {
+    margin-top: 0;
+  }
+  .ms-content h3 {
+    color: #FAFAFA;
+    font-size: 1.1em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  .ms-content ul {
+    padding-left: 20px;
+    margin: 15px 0;
+  }
+  .ms-content li {
+    margin-bottom: 8px;
+    color: #FAFAFA;
+  }
+  .ms-content li strong {
+    color: #FF4B4B;
+  }
+  .ms-content p {
+    margin: 15px 0;
+    color: #FAFAFA;
+  }
+  .ms-content a {
+    color: #FF4B4B;
+    text-decoration: none;
+  }
+  .ms-content a:hover {
+    text-decoration: underline;
+  }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "マラソンペース計算ツール",
+  "operatingSystem": "Web",
+  "applicationCategory": "HealthApplication",
+  "description": "物理モデル（勾配・風・空気抵抗）に基づき、コース別のペース表とフィニッシュタイムを予測するツール。世界7大マラソン＋日本主要大会を収録。"
+}
+</script>
+<div class="ms-wrapper">
+  <iframe
+    class="ms-iframe"
+    src="https://akirun-marathon-simulator.streamlit.app/?embed=true"
+    loading="lazy"
+    title="マラソンペース計算ツール（MPC）"
+  ></iframe>
+</div>
+<div class="ms-content">
+  <h2>マラソンペース計算ツールとは？コース別ペース表・タイムを予測</h2>
+  <p>
+    物理モデル（勾配・風・空気抵抗）に基づき、コース別のペース表とフィニッシュタイムを予測するツールです。
+    世界7大マラソン＋日本主要大会を収録。VDOTまたはフルマラソンタイムを入力するだけで、コース別の目標ペースとゴールタイムがわかります。
+  </p>
+
+  <h2>主な機能：ペース配分・フィニッシュタイム・コース比較</h2>
+  <ul>
+    <li><strong>タイム予測</strong>：VDOTまたはフルマラソンタイムからゴールタイムを物理計算で予測</li>
+    <li><strong>コース比較</strong>：複数コースのタイム差・獲得標高・難易度を比較して最適なレースを選択</li>
+    <li><strong>区間ラップ表</strong>：1km毎の推奨ペースと通過タイムを表示</li>
+    <li><strong>気象条件対応</strong>：風速・風向きを考慮したリアルな予測が可能</li>
+    <li><strong>レース戦略</strong>：イーブン/ポジティブ/ネガティブスプリット、坂道パワー設定に対応</li>
+  </ul>
+
+  <h2>収録コース（世界7大マラソン＋日本主要大会）</h2>
+  <h3>世界7大マラソン</h3>
+  <p>東京 / ボストン / ロンドン / ベルリン / シカゴ / ニューヨークシティ / シドニー</p>
+  <h3>日本国内主要大会</h3>
+  <p>大阪 / 別府大分 / 防府 / あおもり桜 / 新潟シティ / 金沢 / 富山 / 勝田 / 大田原 / つくば / 岡山 / 福岡 / 愛媛 など</p>
+
+  <h2>計算の仕組み：物理モデル（Minetti式）で精度を担保</h2>
+  <p>
+    本シミュレーターは、Minettiの勾配エネルギーコスト式（2002年）と空気抵抗モデルを組み合わせた物理計算を採用。
+    GPXデータを5m精度でリサンプリングし、標高の平滑化処理でノイズを除去しつつコース特性を正確に反映します。
+  </p>
+</div>
