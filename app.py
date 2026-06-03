@@ -9,7 +9,11 @@ from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
 
 # Version
-__version__ = "1.4.2"
+__version__ = "1.5.0"
+
+# Amazonストアフロント（おすすめギア一覧）への送客先。
+# 当面はストアトップ。個別アイデアリストの短縮URLが用意できたら差し替える。
+AMAZON_STORE_URL = "https://www.amazon.co.jp/shop/yancearmstron"
 
 st.set_page_config(page_title="マラソンペース計算ツール（MPC）", layout="wide")
 
@@ -397,11 +401,11 @@ def main():
         target_h = int(meta['base_time_sec'] // 3600)
         target_m = int((meta['base_time_sec'] % 3600) // 60)
         if target_h >= 4:
-            cta_label = "完走を確実にするギア選び →"
+            cta_label = "完走を支えるギアをAmazonで見る →"
         elif target_h >= 3 and target_m >= 30:
-            cta_label = "サブ3.5を狙うシューズ＆ギア →"
+            cta_label = "サブ3.5向けシューズ＆ギアを見る →"
         elif target_h >= 3:
-            cta_label = "サブ3の壁を越えるギア選び →"
+            cta_label = "サブ3に効くギアをAmazonで見る →"
         else:
             cta_label = "2時間台ランナーの装備を見る →"
         
@@ -426,7 +430,7 @@ def main():
                 letter-spacing: 2px;
             ">{formatted_time}</p>
             <p style="margin: 0 0 1rem 0; color: #aaa; font-size: 1rem;">{course_name}</p>
-            <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
+            <a href="{AMAZON_STORE_URL}" target="_blank" rel="noopener noreferrer sponsored" style="
                 display: inline-block;
                 background: rgba(255, 107, 107, 0.15);
                 color: #FF6B6B;
@@ -646,7 +650,7 @@ def main():
         st.dataframe(final_table, use_container_width=True)
 
         # CTA② ラップ表の下 - レース準備CTA
-        st.markdown("""
+        st.markdown(f"""
 <div style="
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     border: 1px solid rgba(255, 107, 107, 0.3);
@@ -659,9 +663,9 @@ def main():
         📋 ラップ表をメモしたら、次は<span style="color: #FF6B6B; font-weight: bold;">ギアの最終チェック</span>
     </p>
     <p style="color: #94A3B8; font-size: 0.8rem; margin: 0 0 0.8rem 0;">
-        レース当日のパフォーマンスはシューズで変わる ── サブエガランナーの装備を公開中
+        レース当日のパフォーマンスはシューズで変わる ── 私の愛用ギアをAmazonにまとめています
     </p>
-    <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
+    <a href="{AMAZON_STORE_URL}" target="_blank" rel="noopener noreferrer sponsored" style="
         display: inline-block;
         background: transparent;
         color: #FF6B6B;
@@ -672,7 +676,7 @@ def main():
         font-weight: bold;
         font-size: 0.85rem;
         transition: all 0.2s;
-    ">👟 PB更新ギアガイドを見る</a>
+    ">👟 おすすめギア一覧（Amazon）</a>
 </div>
 """, unsafe_allow_html=True)
 
@@ -773,17 +777,17 @@ def main():
         else:
             st.caption("比較できる他のGPXファイルがありません。")
 
-        # CTA③ コース比較後 - メインCTAボックス
-        st.markdown("""
+        # CTA③ コース比較後 - メインCTA（Amazonストア・ゴールドカード）
+        st.markdown(f"""
 <div style="
-    background: linear-gradient(135deg, #1E3A5F 0%, #0F172A 100%);
-    border: 1px solid #00E5FF;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 1.5rem 0;
+    background: linear-gradient(135deg, #F4C66B 0%, #E0A23D 100%);
+    border-radius: 16px;
+    padding: 2rem 1.5rem 1.6rem;
+    margin: 1.8rem 0 0.8rem;
     text-align: center;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
 ">
     <div style="
         position: absolute;
@@ -792,30 +796,32 @@ def main():
         transform: translateX(-50%);
         background: linear-gradient(135deg, #FF6B6B, #FF4757);
         color: white;
-        padding: 0.2rem 1rem;
-        border-radius: 0 0 6px 6px;
-        font-size: 0.7rem;
+        padding: 0.25rem 1.2rem;
+        border-radius: 0 0 8px 8px;
+        font-size: 0.72rem;
         font-weight: bold;
+        letter-spacing: 0.5px;
     ">🔥 ランナーに人気</div>
-    <p style="color: #00E5FF; font-size: 1.15rem; margin: 1rem 0 0.3rem 0; font-weight: bold;">
-        👟 PB更新に本当に効いたシューズ＆ギア
+    <p style="font-size: 2.2rem; margin: 1.1rem 0 0.2rem;">👟</p>
+    <p style="color: #1F3A6B; font-weight: 800; font-size: clamp(1.15rem, 4.6vw, 1.5rem); margin: 0 0 0.5rem;">
+        PB更新に効くシューズ＆ギア
     </p>
-    <p style="color: #94A3B8; font-size: 0.85rem; margin-bottom: 1rem;">
-        サブエガ（2:50切り）ランナーが実走検証して厳選した装備ガイド
+    <p style="color: #4a3b14; font-size: clamp(0.85rem, 3.2vw, 0.98rem); line-height: 1.6; margin: 0 auto 1.3rem; max-width: 34em;">
+        私が実走で検証して使っているシューズ・ウェア・補給を、用途別にAmazonのおすすめリストにまとめました。自分に合う一足を探す入口にどうぞ。
     </p>
-    <a href="https://akirun.net/marathon-gear-recommend/" target="_blank" style="
+    <a href="{AMAZON_STORE_URL}" target="_blank" rel="noopener noreferrer sponsored" style="
         display: inline-block;
-        background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
+        background: #1F3A6B;
+        color: #ffffff;
+        padding: 0.95rem 2.4rem;
+        border-radius: 10px;
         text-decoration: none;
-        font-weight: bold;
-        font-size: 1rem;
-        box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
-    ">ギアガイドを読む →</a>
-    <p style="color: #64748B; font-size: 0.7rem; margin: 0.8rem 0 0 0;">
-        ※ 記事内にAmazon・楽天のリンクを含みます
+        font-weight: 800;
+        font-size: clamp(1rem, 3.8vw, 1.2rem);
+        box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
+    ">🛒 おすすめギア一覧（Amazon）を見る ›</a>
+    <p style="color: #5a4a1f; font-size: 0.72rem; margin: 1rem 0 0;">
+        ※ Amazonのアソシエイトとして適格販売により収入を得ています
     </p>
 </div>
 """, unsafe_allow_html=True)
