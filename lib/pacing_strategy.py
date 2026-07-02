@@ -4,14 +4,12 @@ from lib.physics import RunningPhysics
 from lib.course_data import CourseData
 
 class PacingStrategy:
-    def __init__(self, mass_kg=65.0, vdot=45.0, wind_speed_ms=0.0, wind_dir_degrees=0.0, target_time_sec=None, hill_preference=100.0, pacing_preference="even"):
+    def __init__(self, mass_kg=65.0, wind_speed_ms=0.0, wind_dir_degrees=0.0, target_time_sec=None, hill_preference=100.0, pacing_preference="even"):
         """
         hill_preference: Float/Int 70 to 130 (Percentage of flat power on 5% gradient).
         pacing_preference: String "even", "positive", "negative".
         """
         self.mass = mass_kg
-        self.mass = mass_kg
-        self.vdot = vdot
         # Apply Correction Factor for Ground Level Wind & Shielding
         # Meteorological wind (10m height) vs Ground (1.5m) + Shielding by other runners
         # Factor 0.5 is a common heuristic.

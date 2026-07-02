@@ -1,0 +1,3 @@
+# 開発・テスト用依存（本番Streamlit Cloudにはインストールしない）
+-r requirements.txt
+pytest>=7.0.0

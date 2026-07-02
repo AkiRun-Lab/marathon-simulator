@@ -46,6 +46,17 @@ class TestPacingStrategyRobustness:
         assert df['time_sec'].sum() < 12 * 3600
 
 
+class TestSamplingDistance:
+
+    def test_total_sampled_distance_is_exactly_42_195(self):
+        """終点にも5m区間を加算して42.200km扱いになる過大計上がない（G-7）"""
+        course = CourseData()
+        course.segments.append(CourseSegment(0.0, 42.195, 0.0, 0.0, False, "Flat"))
+        df = course.sample_at_interval_meters(5)
+        assert len(df) == 8439  # 42195m / 5m
+        assert df['km'].iloc[-1] == pytest.approx(42.190)
+
+
 class TestGPXElevationValidation:
 
     def _write_gpx(self, trkpts: str) -> str:

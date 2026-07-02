@@ -20,6 +20,17 @@
 - **静かなフォールバックを廃止（Y-4）**：GPXファイルが読めない場合に通知なしで愛媛簡易モデルの結果を表示していた挙動を廃止し、明示的なエラー表示に変更（本体・コース比較とも）。VDOTデータ欠落時の機能しない代替入力欄も削除。
 - 堅牢化のテスト5件を追加（`tests/test_robustness.py`）。
 
+### 整理（フェーズ3：クリーンアップ）
+- シミュレーション総距離の5m過大計上を修正（G-7）：終点42.195km地点にも5m区間を加算していたため合計が42.200km分になっていた。予想タイムが約1〜2秒短くなる。
+- 非推奨APIを更新（G-8）：`Scattermapbox`→`Scattermap`、`use_container_width`→`width="stretch"`。requirementsの下限を streamlit>=1.49 / plotly>=5.24 に引き上げ。
+- `pytest` を `requirements-dev.txt` に分離（G-3）：本番Streamlit Cloudへの不要インストールを解消。
+- デバッグ・検証スクリプト4本を `scripts/` へ移動（G-6）。実行方法は `scripts/README.md` 参照。
+- 未使用コードを削除（G-4）：`calculate_difficulty_score`・`get_ehime_marathon_default`・`get_segment_at_km`（course_data）、`get_adjusted_pace_per_km`（temperature_adjustment）、`get_vdot_options`・`get_seconds_for_vdot`（vdot_handler）、`PacingStrategy` の未使用 `vdot` 引数と `self.mass` 二重代入。
+- 過去のAI編集セッションの残骸コメント（app.py 12行）と重複したsession_state初期化を削除（G-1・G-2）。
+- bare `except:` を具体的な例外型に変更（G-5・vdot_handler）。
+- docstringの例示値を実計算に一致させ（G-9・気温補正 189.2→189.4 等）、「コース難易度」のキャプションに気象・標高の影響が含まれる旨を明記。
+- サンプリング距離のテスト1件を追加（計47件パス）。
+
 ---
 
 ## [1.5.0] - 2026-06-03

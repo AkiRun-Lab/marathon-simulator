@@ -292,26 +292,6 @@ def main():
     
     pacing_preference = split_map[split_label]
 
-    # ... (Session State & Calculation Logic remain same) ...
-    # (Leaving middle parts unchanged via context match skipping, but actually I need to replace block)
-    # Since this is a partial replace, I'll just focus on inputs first if possible.
-    # But wait, replace_file_content replaces a contiguous block. 
-    # I need to be careful not to delete the logic below form.
-    # The 'pacing_preference = ...' line matches existing code.
-    
-    # Let's verify where line 411 starts (Sidebar Info).
-    # I need to handle the bottom part separately or include lines 156-430? That's huge.
-    # I will split this into two edits.
-    
-    # EDIT 1: Sidebar Inputs with Tooltips (replacing lines 61-155)
-
-
-    # --- Session State Initialization ---
-    if 'executed' not in st.session_state:
-        st.session_state['executed'] = False
-        st.session_state['result_df'] = None
-        st.session_state['result_meta'] = {} # Store scalar metrics and context
-
     # --- Calculation Engine (Runs ONLY on Submit) ---
     if submit_btn:
         if target_time_sec is None:
@@ -383,7 +363,6 @@ def main():
             'smoothing_m': smoothing_m,
             # Pre-calculate metrics for current course
             'elevation_gain': course_data.calculate_elevation_gain(),
-            'difficulty_score': course_data.calculate_difficulty_score(),
             'mean_elevation': mean_elevation,
             'altitude_delay_min': altitude_delay_min,
             'altitude_correction_applied': apply_altitude_correction,
@@ -515,7 +494,7 @@ def main():
         # コース難易度 = シミュレーション結果 / 目標タイム
         difficulty = total_seconds / meta['base_time_sec']
         col5.metric("コース難易度", f"{difficulty:.4g}")
-        col5.caption("シミュレーション結果 / 目標タイム")
+        col5.caption("シミュレーション結果 ÷ 目標タイム（気象・標高の影響込み）")
         mean_elev = meta.get('mean_elevation', 0.0)
         col6.metric("平均標高", f"{int(mean_elev)}m")
         col6.caption("コース平均海抜")
@@ -559,7 +538,7 @@ def main():
             hovermode="x unified",
             legend=dict(orientation="h", y=1.1)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
         # --- Course Map ---
         if 'lat' in df_high_res.columns and df_high_res['lat'].notnull().any():
@@ -568,7 +547,7 @@ def main():
             # Filter valid coords
             map_df = df_high_res.dropna(subset=['lat', 'lon'])
             
-            map_fig = go.Figure(go.Scattermapbox(
+            map_fig = go.Figure(go.Scattermap(
                 mode = "lines",
                 lon = map_df['lon'],
                 lat = map_df['lat'],
@@ -606,15 +585,15 @@ def main():
                 zoom_level = 12
             
             map_fig.update_layout(
-                mapbox_style="open-street-map",
-                mapbox = dict(
+                map_style="open-street-map",
+                map = dict(
                     center=dict(lat=mid_lat, lon=mid_lon),
                     zoom=zoom_level
                 ),
                 margin={"r":0,"t":0,"l":0,"b":0},
                 height=400
             )
-            st.plotly_chart(map_fig, use_container_width=True)
+            st.plotly_chart(map_fig, width="stretch")
 
         # --- Detailed Table (Aggregated to 1km) ---
         st.subheader("シミュレーション結果：区間ラップ表（1km毎）")
@@ -657,7 +636,7 @@ def main():
         df_1km['平均ペース'] = df_1km['pace_sec_km'].apply(fmt_pace)
 
         final_table = df_1km[['区間', '平均ペース', 'ラップ', '通過タイム']]
-        st.dataframe(final_table, use_container_width=True)
+        st.dataframe(final_table, width="stretch")
 
         # CTA② ラップ表の下 - レース準備CTA
         st.markdown(f"""

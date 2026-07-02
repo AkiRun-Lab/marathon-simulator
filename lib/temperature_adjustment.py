@@ -23,8 +23,8 @@ def adjust_marathon_time(base_time_min: float, temperature: float) -> float:
     Examples:
         >>> adjust_marathon_time(180, 10)  # 3:00 @ 10°C
         180.0
-        >>> adjust_marathon_time(180, 20)  # 3:00 @ 20°C
-        189.2  # 約9分増加
+        >>> round(adjust_marathon_time(180, 20), 1)  # 3:00 @ 20°C
+        189.4  # 約9.4分増加
     """
     OPTIMAL_TEMP = 10.0  # 最適気温（°C）
     COEFFICIENT = 0.0001  # 係数
@@ -72,33 +72,10 @@ def get_delay_minutes(base_time_min: float, temperature: float) -> float:
         >>> get_delay_minutes(180, 10)
         0.0
         >>> round(get_delay_minutes(180, 20), 1)
-        9.2
+        9.4
     """
     adjusted = adjust_marathon_time(base_time_min, temperature)
     return adjusted - base_time_min
-
-
-def get_adjusted_pace_per_km(base_time_min: float, temperature: float) -> str:
-    """調整後の1kmあたりペースを計算
-    
-    Args:
-        base_time_min: 最適条件での目標タイム（分）
-        temperature: レース当日の気温（°C）
-    
-    Returns:
-        MM:SS/km 形式の文字列
-    
-    Examples:
-        >>> get_adjusted_pace_per_km(180, 10)
-        '4:16/km'
-        >>> get_adjusted_pace_per_km(180, 20)
-        '4:29/km'
-    """
-    adjusted = adjust_marathon_time(base_time_min, temperature)
-    pace_min = adjusted / 42.195
-    mins = int(pace_min)
-    secs = int((pace_min % 1) * 60)
-    return f"{mins}:{secs:02d}/km"
 
 
 def get_temperature_warning(temperature: float) -> str:

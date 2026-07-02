@@ -1,14 +1,12 @@
 import pandas as pd
-from lib.course_data import CourseData
 from lib.pacing_strategy import PacingStrategy
 from lib.gpx_handler import GPXHandler
-# from lib.vdot_handler import VDOTHandler # Not needed for this specific check, we assume 3:30 input
 
 def debug_sim():
     print("--- Debugging Simulation Internals ---")
-    
+
     # 1. Load Course
-    handler = GPXHandler("data/Ehime-marathon2025.gpx")
+    handler = GPXHandler("data/domestic/愛媛マラソン.gpx")
     course = handler.to_course_data()
     
     # Check Elevation Stats
@@ -34,9 +32,8 @@ def debug_sim():
     print(f"Time: {target_time_str} ({target_seconds} sec)")
     
     strategy = PacingStrategy(
-        mass_kg=60, 
-        vdot=45, # dummy
-        wind_speed_ms=0, 
+        mass_kg=60,
+        wind_speed_ms=0,
         target_time_sec=target_seconds
     )
     

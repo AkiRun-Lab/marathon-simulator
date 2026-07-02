@@ -19,75 +19,9 @@ class CourseSegment:
     def distance(self):
         return self.end_km - self.start_km
 
-# ... (CourseData class def and get_ehime_marathon_default remain unchanged mostly, 
-# but new segments there will default lat/lon to None)
-
-
-
 class CourseData:
     def __init__(self):
         self.segments: List[CourseSegment] = []
-    
-    @staticmethod
-    def get_ehime_marathon_default():
-        """
-        Returns a simplified model of the Ehime Marathon course.
-        Based on user description:
-        - 0-7km: Flat/Rolling
-        - 7-8km: Hirata Hill (Steep)
-        - 10-34km: Coastal (Windy)
-        - 36-37km: Hirata Hill (Steep)
-        - 37-Finish: Gradual Uphill
-        
-        Assumed Bearings (APPROXIMATE - needs checking map):
-        Ehime Marathon starts in Matsuyama (North-ish) -> Hojo (North) -> Return.
-        - Outbound: North/North-East
-        - Inbound: South/South-West
-        """
-        course = CourseData()
-        
-        # Segment 1: Start to Hirata (0 - 7km)
-        # Assuming mostly North bound
-        course.segments.append(CourseSegment(0.0, 7.0, 0.0, 10.0, False, "Start Flat"))
-        
-        # Segment 2: Hirata Hill Outbound (7 - 8km)
-        # Steep Uphill
-        course.segments.append(CourseSegment(7.0, 8.0, 0.04, 20.0, True, "Hirata Hill (Out)"))
-        
-        # Segment 3: Descent to Coast (8 - 10km)
-        # Downhill
-        course.segments.append(CourseSegment(8.0, 10.0, -0.02, 30.0, False, "Descent to Coast"))
-        
-        # Segment 4: Coastal Outbound (10 - 20km) - Turning point approx 25km? 
-        # Actually Ehime turning point is around 25km (Hojo).
-        # Let's say 10-25 is North-East bound
-        course.segments.append(CourseSegment(10.0, 25.0, 0.0, 45.0, True, "Coastal Outbound (Windy)"))
-        
-        # Segment 5: Coastal Return (25 - 34km)
-        # South-West bound (180 deg turn)
-        course.segments.append(CourseSegment(25.0, 34.0, 0.0, 225.0, True, "Coastal Inbound (Windy)"))
-        
-        # Segment 6: Approach Hirata (34 - 36km)
-        course.segments.append(CourseSegment(34.0, 36.0, 0.01, 200.0, False, "Approach Hirata"))
-        
-        # Segment 7: Hirata Hill Return (36 - 37km)
-        # Steep Uphill (User said steep hills at 36km)
-        course.segments.append(CourseSegment(36.0, 37.0, 0.04, 200.0, True, "Hirata Hill (Return)"))
-        
-        # Segment 8: Finish Run (37 - 42.195km)
-        # Gradual Uphill
-        course.segments.append(CourseSegment(37.0, 42.195, 0.01, 190.0, False, "Gradual Uphill to Goal"))
-        
-        return course
-
-    def get_segment_at_km(self, current_km) -> Optional[CourseSegment]:
-        for seg in self.segments:
-            if seg.start_km <= current_km < seg.end_km:
-                return seg
-        # Handle exact finish line or small floating point overlap
-        if len(self.segments) > 0 and current_km >= self.segments[-1].end_km:
-             return self.segments[-1]
-        return None
 
     def sample_at_interval_meters(self, interval_m=1000):
         """
@@ -99,13 +33,16 @@ class CourseData:
             total_dist_km = max(total_dist_km, self.segments[-1].end_km)
             
         points = []
-        current_km = 0.0
-        
+
         # Optimization: Keep track of last segment index to avoid full search
         seg_idx = 0
         num_segments = len(self.segments)
-        
-        while current_km <= total_dist_km + 0.0001: # Include finish
+
+        # 各ポイントは [current_km, current_km + interval) の区間の始点を表す。
+        # 終点そのもの（42.195km地点）を含めると1区間ぶん距離を過大計上するため含めない。
+        n_points = int(round(total_dist_km * 1000.0 / interval_m))
+        for point_idx in range(n_points):
+            current_km = point_idx * interval_m / 1000.0
             # Find segment efficiently (assuming sequential access)
             found_seg = None
             if num_segments > 0:
@@ -151,9 +88,7 @@ class CourseData:
                     'lat': None,
                     'lon': None
                 })
-            
-            current_km += (interval_m / 1000.0)
-            
+
         return pd.DataFrame(points)
 
     def calculate_mean_elevation(self) -> float:
@@ -183,21 +118,3 @@ class CourseData:
                  total_gain += rise
         return total_gain
 
-    def calculate_difficulty_score(self) -> float:
-        """
-        Calculate a difficulty score.
-        Base Score = 100 (Flat 42km)
-        Strategy: Score = 100 + (Elevation Gain / 10)
-        Example: 
-        - Flat (Gain 0) -> 100
-        - Hill (Gain 300m) -> 130
-        """
-        gain = self.calculate_elevation_gain()
-        # Normalized for marathon distance? 
-        # Since this app is mostly for marathons, assuming ~42km distance is constant.
-        # But if user uploads shorter run, score might be low.
-        # Let's use Gain per Km density? No, total pain matters.
-        
-        base_score = 100
-        score = base_score + (gain / 10.0)
-        return round(score, 1)
