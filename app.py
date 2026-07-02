@@ -7,9 +7,15 @@ from lib.course_data import CourseData
 from lib.pacing_strategy import PacingStrategy
 from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
+from lib.temperature_adjustment import adjust_marathon_time, get_delay_minutes, get_temperature_warning
+from lib.altitude_adjustment import (
+    adjust_marathon_time as altitude_adjust_time,
+    get_delay_minutes as altitude_get_delay,
+    get_altitude_warning,
+)
 
 # Version
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
 # 当面はストアトップ。個別アイデアリストの短縮URLが用意できたら差し替える。
@@ -318,21 +324,15 @@ def main():
             st.stop()
         
         # Temperature Adjustment
-        from lib.temperature_adjustment import adjust_marathon_time, get_delay_minutes
-        
         base_time_sec = target_time_sec  # 補正前のタイムを保存
         base_time_min = target_time_sec / 60
-        
+
         # 気温補正を適用
         adjusted_time_min = adjust_marathon_time(base_time_min, temperature)
         temp_delay_min = get_delay_minutes(base_time_min, temperature)
+        temp_adjusted_time_min = adjusted_time_min  # 標高補正前のタイム（コース比較で使用）
 
         # 標高補正を適用
-        from lib.altitude_adjustment import (
-            adjust_marathon_time as altitude_adjust_time,
-            get_delay_minutes as altitude_get_delay,
-            get_altitude_warning,
-        )
         mean_elevation = course_data.calculate_mean_elevation()
         altitude_delay_min = altitude_get_delay(base_time_min, mean_elevation, threshold_m=altitude_threshold_m) if apply_altitude_correction else 0.0
         if apply_altitude_correction:
@@ -359,6 +359,7 @@ def main():
             'course_name': selected_gpx,
             'base_speed_ms': strategy.base_speed_ms,
             'target_time_sec': adjusted_time_sec,  # 補正後のタイム
+            'temp_adjusted_time_sec': temp_adjusted_time_min * 60,  # 気温補正のみ（標高補正前）のタイム
             'base_time_sec': base_time_sec,  # 補正前のタイム（表示用）
             'temperature': temperature,  # 気温
             'temp_delay_min': temp_delay_min,  # 気温による遅延 
@@ -446,8 +447,6 @@ def main():
         
         # Temperature Adjustment Info
         if meta['temperature'] > 10:
-            from lib.temperature_adjustment import get_temperature_warning, format_time
-            
             delay_min = meta['temp_delay_min']
             temp = meta['temperature']
             base_time_sec = meta['base_time_sec']
@@ -472,7 +471,6 @@ def main():
 
         # Altitude Adjustment Info
         if meta.get('altitude_correction_applied'):
-            from lib.altitude_adjustment import get_altitude_warning
             mean_elev = meta.get('mean_elevation', 0.0)
             alt_delay = meta.get('altitude_delay_min', 0.0)
             if alt_delay > 0.0:
@@ -706,12 +704,22 @@ def main():
                 else:
                     comp_data = CourseData.get_ehime_marathon_default()
                 
+                # 標高補正は比較先コース自身の平均標高で再計算する（気温補正は気象条件なので共通）
+                comp_target_sec = meta.get('temp_adjusted_time_sec', meta['target_time_sec'])
+                comp_mean_elev = comp_data.calculate_mean_elevation()
+                if meta.get('altitude_correction_applied'):
+                    comp_target_sec = altitude_adjust_time(
+                        comp_target_sec / 60.0,
+                        comp_mean_elev,
+                        threshold_m=meta.get('altitude_threshold_m', 500),
+                    ) * 60.0
+
                 # Run Strategy
                 comp_strategy = PacingStrategy(
                     mass_kg=meta['weight'],
                     wind_speed_ms=meta['wind_speed'],
                     wind_dir_degrees=meta['wind_dir'],
-                    target_time_sec=meta['target_time_sec'],
+                    target_time_sec=comp_target_sec,
                     hill_preference=meta['hill_param'],
                     pacing_preference=meta['pacing_pref']
                 )
@@ -745,16 +753,20 @@ def main():
                 # Display Results with Metrics
                 c1, c2 = st.columns(2)
                 
+                curr_mean_elev = meta.get('mean_elevation', 0.0)
+
                 # Current
                 c1.markdown(f"### {os.path.basename(current_course).replace('.gpx', '')}")
                 c1.metric("予想タイム", formatted_time)
                 c1.metric("獲得標高", f"{int(curr_gain)}m")
+                c1.metric("平均標高", f"{int(curr_mean_elev)}m")
                 c1.metric("コース難易度", f"{curr_difficulty:.4g}")
-                
+
                 # Comparison
                 c2.markdown(f"### {os.path.basename(compare_gpx).replace('.gpx', '')}")
                 c2.metric("予想タイム", comp_time_fmt, delta=diff_str, delta_color="inverse")
                 c2.metric("獲得標高", f"{int(comp_gain)}m", delta=f"{int(comp_gain - curr_gain)}m", delta_color="off")
+                c2.metric("平均標高", f"{int(comp_mean_elev)}m", delta=f"{int(comp_mean_elev - curr_mean_elev)}m", delta_color="off")
                 diff_difficulty = comp_difficulty - curr_difficulty
                 c2.metric("コース難易度", f"{comp_difficulty:.4g}", delta=f"{diff_difficulty:+.4g}", delta_color="off")
                 
