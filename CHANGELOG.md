@@ -22,7 +22,7 @@
 
 ### 整理（フェーズ3：クリーンアップ）
 - シミュレーション総距離の5m過大計上を修正（G-7）：終点42.195km地点にも5m区間を加算していたため合計が42.200km分になっていた。予想タイムが約1〜2秒短くなる。
-- 非推奨APIを更新（G-8）：`Scattermapbox`→`Scattermap`、`use_container_width`→`width="stretch"`。requirementsの下限を streamlit>=1.49 / plotly>=5.24 に引き上げ。
+- 非推奨APIを更新（G-8）：`Scattermapbox`→`Scattermap`、`st.dataframe` の `use_container_width`→`width="stretch"`（`st.plotly_chart` はstreamlit 1.50時点で `width` 未対応のため据え置き）。requirementsの下限を streamlit>=1.49 / plotly>=5.24 に引き上げ。
 - `pytest` を `requirements-dev.txt` に分離（G-3）：本番Streamlit Cloudへの不要インストールを解消。
 - デバッグ・検証スクリプト4本を `scripts/` へ移動（G-6）。実行方法は `scripts/README.md` 参照。
 - 未使用コードを削除（G-4）：`calculate_difficulty_score`・`get_ehime_marathon_default`・`get_segment_at_km`（course_data）、`get_adjusted_pace_per_km`（temperature_adjustment）、`get_vdot_options`・`get_seconds_for_vdot`（vdot_handler）、`PacingStrategy` の未使用 `vdot` 引数と `self.mass` 二重代入。

@@ -538,7 +538,7 @@ def main():
             hovermode="x unified",
             legend=dict(orientation="h", y=1.1)
         )
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
         # --- Course Map ---
         if 'lat' in df_high_res.columns and df_high_res['lat'].notnull().any():
@@ -593,7 +593,7 @@ def main():
                 margin={"r":0,"t":0,"l":0,"b":0},
                 height=400
             )
-            st.plotly_chart(map_fig, width="stretch")
+            st.plotly_chart(map_fig, use_container_width=True)
 
         # --- Detailed Table (Aggregated to 1km) ---
         st.subheader("シミュレーション結果：区間ラップ表（1km毎）")
