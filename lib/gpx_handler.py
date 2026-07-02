@@ -32,7 +32,16 @@ class GPXHandler:
         df_raw = pd.DataFrame(points)
         if df_raw.empty:
             return pd.DataFrame()
-            
+
+        # 標高タグ(<ele>)の検証：欠損のまま進めると補間計算がTypeErrorで落ちる
+        if df_raw['ele'].isnull().all():
+            raise ValueError(
+                f"GPXファイルに標高データ(<ele>)が含まれていません: {self.gpx_path}"
+            )
+        if df_raw['ele'].isnull().any():
+            # 一部欠損は前後の値から線形補間で埋める
+            df_raw['ele'] = df_raw['ele'].astype(float).interpolate(limit_direction='both')
+
         # --- 1. Calculate Raw Cumulative Distance ---
         raw_lat = df_raw['lat'].values
         raw_lon = df_raw['lon'].values

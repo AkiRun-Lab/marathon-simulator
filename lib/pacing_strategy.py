@@ -21,7 +21,7 @@ class PacingStrategy:
         self.pacing_preference = pacing_preference
         
         # Calculate Base Power (Watts)
-        if target_time_sec:
+        if target_time_sec is not None and target_time_sec > 0:
             self.base_speed_ms = 42195.0 / target_time_sec
         else:
             # Default to 4 hours if not provided (Safety fallback)
@@ -79,7 +79,9 @@ class PacingStrategy:
         # target_ratio < 1 -> K is negative.
         # M = 1 + (neg * neg) = 1 + pos > 1.0 (Push on downhill). Correct.
         
-        hill_factors = 1.0 + (grad_array * k_factor)
+        # 急勾配×低い坂道強度でパワー乗数が0以下にならないよう下限をクランプ
+        # （負のパワーはソルバーの前提を壊し、走行不能扱いになるため）
+        hill_factors = np.clip(1.0 + (grad_array * k_factor), 0.3, None)
         
         # Combine
         raw_multipliers = split_factors * hill_factors
@@ -115,20 +117,20 @@ class PacingStrategy:
                 mass=self.mass
             )
             
+            # ソルバーが下限値(0.1)や解なし(0.0)を返した場合も、下限速度で実距離ぶんの
+            # 時間を積算する（旧実装は5m区間に9999秒を加算して合計タイムが崩壊していた）
+            effective_speed = max(optimal_speed, 0.1)
             dist_m = interval_meters
-            if optimal_speed > 0.1:
-                time_sec = dist_m / optimal_speed
-            else:
-                time_sec = 9999 # Walking/Stopped
-                
+            time_sec = dist_m / effective_speed
+
             cumulative_time += time_sec
-            pace_min_km = (1000.0 / optimal_speed) / 60.0 if optimal_speed > 0.1 else 30.0
+            pace_min_km = (1000.0 / effective_speed) / 60.0
             
             results.append({
                 'km': row['km'],
                 'gradient': row['gradient'],
                 'segment_name': row['segment_name'],
-                'speed_ms': optimal_speed,
+                'speed_ms': effective_speed,
                 'pace_min_km': pace_min_km,
                 'time_sec': time_sec,
                 'cumulative_time_sec': cumulative_time,

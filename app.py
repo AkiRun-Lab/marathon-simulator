@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import os
-from lib.course_data import CourseData
 from lib.pacing_strategy import PacingStrategy
 from lib.gpx_handler import GPXHandler
 from lib.vdot_handler import VDOTHandler
@@ -171,14 +170,20 @@ def main():
                             if len(parts) == 3: h, m, s = parts
                             elif len(parts) == 2: h, m = parts; s = 0
                             else: raise ValueError
-                            target_time_sec = h * 3600 + m * 60 + s
+                            if not (0 <= m <= 59 and 0 <= s <= 59):
+                                raise ValueError
+                            total_sec = h * 3600 + m * 60 + s
+                            # フルマラソンとして現実的な範囲のみ受け付ける
+                            if not (1 * 3600 <= total_sec <= 7 * 3600):
+                                raise ValueError
+                            target_time_sec = total_sec
                             s_vdot = vdot_handler.get_exact_vdot_from_time(target_time_sec)
                             st.caption(f"相当 VDOT: {s_vdot:.2f}")
                         except ValueError:
                             target_time_sec = None
+                            st.caption("⚠️ h:mm:ss 形式（1:00:00〜7:00:00）で入力してください")
                 else:
-                    st.error("VDOTデータなし")
-                    selected_vdot_float = st.number_input("VDOT", value=45.0)
+                    st.error("VDOTデータ（data/VDOT一覧表.csv）が見つかりません。実行できません。")
 
             st.markdown("---")
 
@@ -194,7 +199,8 @@ def main():
             intl_files = sorted([os.path.join("international", f) for f in os.listdir(intl_dir) if f.endswith(".gpx")]) if os.path.exists(intl_dir) else []
             gpx_files = domestic_files + intl_files
             if not gpx_files:
-                gpx_files = ["Ehime-marathon2025.gpx (Default)"]
+                st.error("コースファイル（GPX）が見つかりません。data/domestic または data/international に配置してください。")
+                st.stop()
 
             selected_gpx = st.selectbox(
                 "コースファイル", gpx_files,
@@ -308,21 +314,27 @@ def main():
 
     # --- Calculation Engine (Runs ONLY on Submit) ---
     if submit_btn:
-        st.session_state['executed'] = True
-        
-        # Load Course Data
-        course_data = None
-        gpx_path = os.path.join("data", selected_gpx)
-        if os.path.exists(gpx_path):
-            handler = GPXHandler(gpx_path)
-            course_data = handler.to_course_data(smoothing_window_m=smoothing_m)
-        else:
-            course_data = CourseData.get_ehime_marathon_default()
-        
         if target_time_sec is None:
             st.error("目標タイムまたはVDOTの設定を確認してください。")
             st.stop()
-        
+
+        # Load Course Data（読み込めない場合は黙ってフォールバックせず明示エラー）
+        gpx_path = os.path.join("data", selected_gpx)
+        if not os.path.exists(gpx_path):
+            st.error(f"コースファイルが見つかりません: {selected_gpx}")
+            st.stop()
+        try:
+            handler = GPXHandler(gpx_path)
+            course_data = handler.to_course_data(smoothing_window_m=smoothing_m)
+        except ValueError as e:
+            st.error(f"コースファイルを読み込めませんでした: {e}")
+            st.stop()
+        if not course_data.segments:
+            st.error(f"コースファイルに座標データがありません: {selected_gpx}")
+            st.stop()
+
+        st.session_state['executed'] = True
+
         # Temperature Adjustment
         base_time_sec = target_time_sec  # 補正前のタイムを保存
         base_time_min = target_time_sec / 60
@@ -693,16 +705,22 @@ def main():
             )
             
             if st.button("コース比較を実行", key="compare_btn"):
-                # Load comparison course
+                # Load comparison course（読み込めない場合は明示エラー）
                 comp_gpx_path = os.path.join("data", compare_gpx)
-                comp_data = None
-                if os.path.exists(comp_gpx_path):
+                if not os.path.exists(comp_gpx_path):
+                    st.error(f"比較コースファイルが見つかりません: {compare_gpx}")
+                    st.stop()
+                try:
                     comp_handler = GPXHandler(comp_gpx_path)
                     # Use the same smoothing parameter as the current simulation
-                    sm_m = meta.get('smoothing_m', 0) # Default to 0 if missing (but should be there)
+                    sm_m = meta.get('smoothing_m', 130)
                     comp_data = comp_handler.to_course_data(smoothing_window_m=sm_m)
-                else:
-                    comp_data = CourseData.get_ehime_marathon_default()
+                except ValueError as e:
+                    st.error(f"比較コースを読み込めませんでした: {e}")
+                    st.stop()
+                if not comp_data.segments:
+                    st.error(f"比較コースに座標データがありません: {compare_gpx}")
+                    st.stop()
                 
                 # 標高補正は比較先コース自身の平均標高で再計算する（気温補正は気象条件なので共通）
                 comp_target_sec = meta.get('temp_adjusted_time_sec', meta['target_time_sec'])
