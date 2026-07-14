@@ -1,3 +1,4 @@
+import html
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,13 +13,69 @@ from lib.altitude_adjustment import (
     get_delay_minutes as altitude_get_delay,
     get_altitude_warning,
 )
+from lib.cta_selector import judge_cta_category
 
 # Version
-__version__ = "1.5.1"
+__version__ = "1.6.0"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
-# 当面はストアトップ。個別アイデアリストの短縮URLが用意できたら差し替える。
+# 汎用CTAはストアトップ、シミュレーション結果連動CTAは下のカテゴリ別アイデアリストを使う。
 AMAZON_STORE_URL = "https://www.amazon.co.jp/shop/yancearmstron"
+
+# カテゴリ別Amazonアイデアリスト（未発行のものはストアトップにフォールバック。発行後にURLだけ差し替える）
+AMAZON_RACE_SHOES_LIST_URL = "https://amzn.to/44ZTgZQ"   # ①レースシューズ（発行済み）
+AMAZON_DAILY_TRAINER_LIST_URL = "https://amzn.to/4wBLAsD" # ②デイリートレーナー（発行済み）
+AMAZON_WEAR_LIST_URL = AMAZON_STORE_URL                   # ③ウェア（短縮URL未発行）
+AMAZON_GADGET_LIST_URL = AMAZON_STORE_URL                 # ④ギア・ガジェット（短縮URL未発行）
+AMAZON_FUEL_LIST_URL = AMAZON_STORE_URL                   # ⑤補給・サプリ（短縮URL未発行）
+AMAZON_ACCESSORIES_LIST_URL = AMAZON_STORE_URL            # ⑥ゼッケン・小物（短縮URL未発行）
+AMAZON_STRENGTH_LIST_URL = "https://amzn.to/4o3iHCx"      # ⑦筋トレ・補強（glute_core専用リスト発行後に差し替え）
+
+# シミュレーション結果連動CTA①の文言バリアント（cta_selector.judge_cta_category の戻り値がキー）
+# heat_severe/heat_moderate/wind/hilly はcaption付きの専用訴求。
+# shoes_race/shoes_daily は目標タイム帯別ラベル（app.py内で動的生成）をそのまま使うため
+# caption/labelはNone（呼び出し側で判定してフォールバックする）
+CTA_VARIANTS = {
+    "heat_severe": {
+        "caption": "気温{temp}℃の想定で+{delay}分。暑いレースは補給・電解質の準備で差がつきます",
+        "label": "🥤 補給・サプリのおすすめを見る →",
+        "url": AMAZON_FUEL_LIST_URL,
+    },
+    "heat_moderate": {
+        "caption": "気温{temp}℃の想定で+{delay}分。通気・冷却ウェアで消耗を抑えられます",
+        "label": "👕 ランニングウェアのおすすめを見る →",
+        "url": AMAZON_WEAR_LIST_URL,
+    },
+    "wind": {
+        "caption": "風速{wind}m/sの想定。ゼッケンのばたつきや防風の小物で備えられます",
+        "label": "🎽 ゼッケン・小物のおすすめを見る →",
+        "url": AMAZON_ACCESSORIES_LIST_URL,
+    },
+    "hilly": {
+        "caption": "獲得標高{gain}m。下りの着地衝撃に耐える殿筋・体幹が武器になります",
+        "label": "💪 補強・筋トレグッズを見る →",
+        "url": AMAZON_STRENGTH_LIST_URL,
+    },
+    "shoes_race": {
+        "caption": None,
+        "label": None,
+        "url": AMAZON_RACE_SHOES_LIST_URL,
+    },
+    "shoes_daily": {
+        "caption": None,
+        "label": None,
+        "url": AMAZON_DAILY_TRAINER_LIST_URL,
+    },
+}
+
+
+def _fmt_num_or_int(value) -> str:
+    """整数値ならint表示、小数値なら小数1桁で表示する（例: 28.0→"28"、3.5→"3.5"）"""
+    v = float(value)
+    if v == int(v):
+        return str(int(v))
+    return f"{v:.1f}"
+
 
 st.set_page_config(page_title="マラソンペース計算ツール（MPC）", layout="wide")
 
@@ -388,21 +445,57 @@ def main():
         avg_sec = int(avg_pace_sec % 60)
         formatted_pace = f"{avg_min}:{avg_sec:02d}/km"
         
-        # Summary Metrics - Featured Time Display + CTA①（カード一体型）
-        # 目標タイムに応じたCTAメッセージ
+        # Summary Metrics - Featured Time Display + CTA①（カード一体型・カテゴリ別送客）
+        # 目標タイム帯別ラベル（従来ロジック。shoes_race/shoes_daily カテゴリ・フォールバック時に使用）
         target_h = int(meta['base_time_sec'] // 3600)
         target_m = int((meta['base_time_sec'] % 3600) // 60)
         if target_h >= 4:
-            cta_label = "完走を支えるギアをAmazonで見る →"
+            fallback_cta_label = "👟 完走を支えるギアをAmazonで見る →"
         elif target_h >= 3 and target_m >= 30:
-            cta_label = "サブ3.5向けシューズ＆ギアを見る →"
+            fallback_cta_label = "👟 サブ3.5向けシューズ＆ギアを見る →"
         elif target_h >= 3:
-            cta_label = "サブ3に効くギアをAmazonで見る →"
+            fallback_cta_label = "👟 サブ3に効くギアをAmazonで見る →"
         else:
-            cta_label = "2時間台ランナーの装備を見る →"
-        
+            fallback_cta_label = "👟 2時間台ランナーの装備を見る →"
+
+        # シミュレーション結果（st.session_state由来のmetaのみ使用・rerun耐性）からCTAカテゴリを判定
+        cta_category = judge_cta_category(
+            meta.get('temp_delay_min'),
+            meta.get('wind_speed'),
+            meta.get('elevation_gain'),
+            meta.get('base_time_sec'),
+        )
+
+        cta_url = AMAZON_STORE_URL
+        cta_label = fallback_cta_label
+        cta_caption_html = ""
+
+        variant = CTA_VARIANTS.get(cta_category)
+        try:
+            if cta_category in ("shoes_race", "shoes_daily") and variant is not None:
+                cta_url = variant["url"]
+                cta_label = fallback_cta_label
+            elif variant is not None and variant.get("caption"):
+                caption_text = variant["caption"].format(
+                    temp=_fmt_num_or_int(meta.get('temperature')),
+                    delay=f"{float(meta.get('temp_delay_min', 0.0)):.1f}",
+                    wind=_fmt_num_or_int(meta.get('wind_speed')),
+                    gain=int(round(float(meta.get('elevation_gain', 0.0)))),
+                )
+                cta_url = variant["url"]
+                cta_label = variant["label"]
+                cta_caption_html = (
+                    '<p style="margin: 0 0 0.6rem 0; color: #aaa; font-size: 0.82rem;">'
+                    f'{html.escape(caption_text)}</p>'
+                )
+        except Exception:
+            # 失敗時は現行どおりのタイム帯別ラベル＋ストアトップにフォールバック（アプリを絶対に壊さない）
+            cta_url = AMAZON_STORE_URL
+            cta_label = fallback_cta_label
+            cta_caption_html = ""
+
         course_name = os.path.basename(meta['course_name']).replace('.gpx', '')
-        
+
         st.markdown(f"""
         <div style="
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -422,7 +515,8 @@ def main():
                 letter-spacing: 2px;
             ">{formatted_time}</p>
             <p style="margin: 0 0 1rem 0; color: #aaa; font-size: 1rem;">{course_name}</p>
-            <a href="{AMAZON_STORE_URL}" target="_blank" rel="noopener noreferrer sponsored" style="
+            {cta_caption_html}
+            <a href="{cta_url}" target="_blank" rel="noopener noreferrer sponsored" style="
                 display: inline-block;
                 background: rgba(255, 107, 107, 0.15);
                 color: #FF6B6B;
@@ -432,7 +526,7 @@ def main():
                 font-size: 0.85rem;
                 font-weight: bold;
                 text-decoration: none;
-            ">👟 {cta_label}</a>
+            ">{cta_label}</a>
         </div>
         """, unsafe_allow_html=True)
         
@@ -638,7 +732,7 @@ def main():
         final_table = df_1km[['区間', '平均ペース', 'ラップ', '通過タイム']]
         st.dataframe(final_table, width="stretch")
 
-        # CTA② ラップ表の下 - レース準備CTA
+        # CTA② ラップ表の下 - ランニングギア・ガジェットCTA（分岐なしの固定訴求）
         st.markdown(f"""
 <div style="
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -649,12 +743,12 @@ def main():
     text-align: center;
 ">
     <p style="color: #E2E8F0; font-size: 0.95rem; margin: 0 0 0.3rem 0;">
-        📋 ラップ表をメモしたら、次は<span style="color: #FF6B6B; font-weight: bold;">ギアの最終チェック</span>
+        📋 ラップ表をメモしたら、次は<span style="color: #FF6B6B; font-weight: bold;">ペースを守る道具</span>
     </p>
     <p style="color: #94A3B8; font-size: 0.8rem; margin: 0 0 0.8rem 0;">
-        レース当日のパフォーマンスはシューズで変わる ── 私の愛用ギアをAmazonにまとめています
+        1kmごとのラップを本番で刻むには、GPSウォッチと使い慣れたギアが支えになります
     </p>
-    <a href="{AMAZON_STORE_URL}" target="_blank" rel="noopener noreferrer sponsored" style="
+    <a href="{AMAZON_GADGET_LIST_URL}" target="_blank" rel="noopener noreferrer sponsored" style="
         display: inline-block;
         background: transparent;
         color: #FF6B6B;
@@ -665,7 +759,7 @@ def main():
         font-weight: bold;
         font-size: 0.85rem;
         transition: all 0.2s;
-    ">👟 おすすめギア一覧（Amazon）</a>
+    ">⌚ ランニングギア・ガジェット一覧（Amazon）</a>
 </div>
 """, unsafe_allow_html=True)
 
