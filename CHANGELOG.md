@@ -4,6 +4,17 @@
 
 ---
 
+## [1.6.2] - 2026-07-15
+
+ストアトップにフォールバックしていた4カテゴリのCTA送客先を、発行済みの短縮URLに差し替え。結果連動CTAの全カテゴリが専用アイデアリストへの送客になった。
+
+- `AMAZON_WEAR_LIST_URL` → https://amzn.to/4aRsy9f（③ウェア・暑さ中程度CTA）
+- `AMAZON_GADGET_LIST_URL` → https://amzn.to/4gzOg5l（④ギア・ガジェット・CTA②固定）
+- `AMAZON_FUEL_LIST_URL` → https://amzn.to/4ym5olj（⑤補給・サプリ・暑さ深刻CTA）
+- `AMAZON_ACCESSORIES_LIST_URL` → https://amzn.to/4wmTerj（⑥ゼッケン・小物・強風CTA）
+
+---
+
 ## [1.6.1] - 2026-07-15
 
 起伏コース（獲得標高300m以上）判定時のCTA送客先 `AMAZON_STRENGTH_LIST_URL` を、ストアトップ暫定（リスト⑦）から発行済みの臀筋・体幹アイデアリスト（`https://amzn.to/4fxnEAV`・トラッキングID akirun-rfd-22）に差し替え。起伏コースの脚づくり（殿筋・体幹）へ直接送客する。

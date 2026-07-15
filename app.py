@@ -16,19 +16,19 @@ from lib.altitude_adjustment import (
 from lib.cta_selector import judge_cta_category
 
 # Version
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
 # 汎用CTAはストアトップ、シミュレーション結果連動CTAは下のカテゴリ別アイデアリストを使う。
 AMAZON_STORE_URL = "https://www.amazon.co.jp/shop/yancearmstron"
 
-# カテゴリ別Amazonアイデアリスト（未発行のものはストアトップにフォールバック。発行後にURLだけ差し替える）
-AMAZON_RACE_SHOES_LIST_URL = "https://amzn.to/44ZTgZQ"   # ①レースシューズ（発行済み）
-AMAZON_DAILY_TRAINER_LIST_URL = "https://amzn.to/4wBLAsD" # ②デイリートレーナー（発行済み）
-AMAZON_WEAR_LIST_URL = AMAZON_STORE_URL                   # ③ウェア（短縮URL未発行）
-AMAZON_GADGET_LIST_URL = AMAZON_STORE_URL                 # ④ギア・ガジェット（短縮URL未発行）
-AMAZON_FUEL_LIST_URL = AMAZON_STORE_URL                   # ⑤補給・サプリ（短縮URL未発行）
-AMAZON_ACCESSORIES_LIST_URL = AMAZON_STORE_URL            # ⑥ゼッケン・小物（短縮URL未発行）
+# カテゴリ別Amazonアイデアリスト
+AMAZON_RACE_SHOES_LIST_URL = "https://amzn.to/44ZTgZQ"   # ①レースシューズ
+AMAZON_DAILY_TRAINER_LIST_URL = "https://amzn.to/4wBLAsD" # ②デイリートレーナー
+AMAZON_WEAR_LIST_URL = "https://amzn.to/4aRsy9f"          # ③ウェア（2026-07-15発行）
+AMAZON_GADGET_LIST_URL = "https://amzn.to/4gzOg5l"        # ④ギア・ガジェット（2026-07-15発行）
+AMAZON_FUEL_LIST_URL = "https://amzn.to/4ym5olj"          # ⑤補給・サプリ（2026-07-15発行）
+AMAZON_ACCESSORIES_LIST_URL = "https://amzn.to/4wmTerj"   # ⑥ゼッケン・小物（2026-07-15発行）
 AMAZON_STRENGTH_LIST_URL = "https://amzn.to/4fxnEAV"      # 臀筋・体幹リスト（起伏コースの脚づくり・2026-07-15差し替え済／トラッキングID akirun-rfd-22）
 
 # シミュレーション結果連動CTA①の文言バリアント（cta_selector.judge_cta_category の戻り値がキー）
