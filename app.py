@@ -16,7 +16,7 @@ from lib.altitude_adjustment import (
 from lib.cta_selector import judge_cta_category
 
 # Version
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
 # 汎用CTAはストアトップ、シミュレーション結果連動CTAは下のカテゴリ別アイデアリストを使う。
@@ -29,7 +29,7 @@ AMAZON_WEAR_LIST_URL = AMAZON_STORE_URL                   # ③ウェア（短�
 AMAZON_GADGET_LIST_URL = AMAZON_STORE_URL                 # ④ギア・ガジェット（短縮URL未発行）
 AMAZON_FUEL_LIST_URL = AMAZON_STORE_URL                   # ⑤補給・サプリ（短縮URL未発行）
 AMAZON_ACCESSORIES_LIST_URL = AMAZON_STORE_URL            # ⑥ゼッケン・小物（短縮URL未発行）
-AMAZON_STRENGTH_LIST_URL = "https://amzn.to/4o3iHCx"      # ⑦筋トレ・補強（glute_core専用リスト発行後に差し替え）
+AMAZON_STRENGTH_LIST_URL = "https://amzn.to/4fxnEAV"      # 臀筋・体幹リスト（起伏コースの脚づくり・2026-07-15差し替え済／トラッキングID akirun-rfd-22）
 
 # シミュレーション結果連動CTA①の文言バリアント（cta_selector.judge_cta_category の戻り値がキー）
 # heat_severe/heat_moderate/wind/hilly はcaption付きの専用訴求。
