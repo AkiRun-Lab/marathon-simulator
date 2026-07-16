@@ -14,9 +14,14 @@ from lib.altitude_adjustment import (
     get_altitude_warning,
 )
 from lib.cta_selector import judge_cta_category
+from lib.shoe_finder import build_shoe_finder_url
 
 # Version
-__version__ = "1.6.3"
+__version__ = "1.7.0"
+
+# シューマッチング診断ツール（akirun.net内蔵アプリ・アフィリエイトではない）への送客先。
+# VDOTをクエリパラメータで渡し、練習ペース帯に合うシューズを診断する。
+SHOE_FINDER_URL = "https://akirun.net/shoe-finder/"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
 # 汎用CTAはストアトップ、シミュレーション結果連動CTAは下のカテゴリ別アイデアリストを使う。
@@ -528,7 +533,47 @@ def main():
             ">{cta_label}</a>
         </div>
         """, unsafe_allow_html=True)
-        
+
+        # シューマッチング診断ツールへの誘導CTA（描画時にVDOTを都度計算・result_metaへの保存はしない）
+        # meta・base_time_sec・vdot_handlerが揃わない場合はカード自体を非表示（アプリ本体は壊さない）
+        try:
+            if vdot_handler is not None and meta.get('base_time_sec'):
+                shoe_finder_vdot = vdot_handler.get_exact_vdot_from_time(meta['base_time_sec'])
+                shoe_finder_url = build_shoe_finder_url(shoe_finder_vdot, SHOE_FINDER_URL)
+            else:
+                shoe_finder_url = None
+        except Exception:
+            shoe_finder_url = None
+
+        if shoe_finder_url:
+            st.markdown(f"""
+            <div style="
+                background: linear-gradient(135deg, #4A7FE0 0%, #2C56A8 100%);
+                border-radius: 16px;
+                padding: 1.5rem;
+                margin: 1rem 0;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            ">
+                <p style="margin: 0 0 0.5rem 0; color: #ffffff; font-weight: bold; font-size: 1.15rem;">
+                    あなたの練習ペースに合うシューズは？
+                </p>
+                <p style="margin: 0 0 1rem 0; color: #eaf0ff; font-size: 0.9rem; line-height: 1.5;">
+                    VDOTから練習ペース帯を算出し、レース用・スピード練用・デイリー用のおすすめを診断します。
+                </p>
+                <a href="{shoe_finder_url}" target="_blank" rel="noopener noreferrer" style="
+                    display: inline-block;
+                    background: #ffffff;
+                    color: #2C56A8;
+                    padding: 0.6rem 1.4rem;
+                    border-radius: 20px;
+                    font-size: 0.9rem;
+                    font-weight: bold;
+                    text-decoration: none;
+                ">👟 シューズ診断を開く ›</a>
+            </div>
+            """, unsafe_allow_html=True)
+
         # Temperature Adjustment Info
         if meta['temperature'] > 10:
             delay_min = meta['temp_delay_min']
