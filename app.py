@@ -16,7 +16,7 @@ from lib.altitude_adjustment import (
 from lib.cta_selector import judge_cta_category
 
 # Version
-__version__ = "1.6.2"
+__version__ = "1.6.3"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
 # 汎用CTAはストアトップ、シミュレーション結果連動CTAは下のカテゴリ別アイデアリストを使う。
@@ -514,8 +514,7 @@ def main():
                 text-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
                 letter-spacing: 2px;
             ">{formatted_time}</p>
-            <p style="margin: 0 0 1rem 0; color: #aaa; font-size: 1rem;">{course_name}</p>
-            {cta_caption_html}
+            <p style="margin: 0 0 1rem 0; color: #aaa; font-size: 1rem;">{course_name}</p>{cta_caption_html}
             <a href="{cta_url}" target="_blank" rel="noopener noreferrer sponsored" style="
                 display: inline-block;
                 background: rgba(255, 107, 107, 0.15);
