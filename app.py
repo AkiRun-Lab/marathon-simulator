@@ -17,11 +17,11 @@ from lib.cta_selector import judge_cta_category
 from lib.shoe_finder import build_shoe_finder_url
 
 # Version
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 # シューマッチング診断ツール（akirun.net内蔵アプリ・アフィリエイトではない）への送客先。
 # VDOTをクエリパラメータで渡し、練習ペース帯に合うシューズを診断する。
-SHOE_FINDER_URL = "https://akirun.net/shoe-finder/"
+SHOE_FINDER_URL = "https://akirun.net/lp/shoe-finder/"
 
 # Amazonストアフロント（おすすめギア一覧）への送客先。
 # 汎用CTAはストアトップ、シミュレーション結果連動CTAは下のカテゴリ別アイデアリストを使う。
